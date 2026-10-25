@@ -61,7 +61,7 @@ export function rootNote (kind: Failure | null): string {
 }
 
 export function aboutText (v: Versions, root: RootState, kind: Failure | null, hearth: string = HEARTH_VERSION): string {
-	const parts = [`Hearth ${hearth}`];
+	const parts = [`Lumen ${hearth}`];
 	if (v.webos) parts.push(`webOS ${v.webos}`);
 	if (v.firmware) parts.push(`firmware ${v.firmware}`);
 	if (v.homebrew) parts.push(`Homebrew ${v.homebrew}`);

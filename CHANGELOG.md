@@ -1,5 +1,22 @@
 # Changelog
 
+## Lumen 1.0.0
+
+The first release of **Lumen** (*when speed meets the light*), based on Hearth 1.2.0.
+
+- New name, icon and app ID (`com.thebigbear.lumen`): Lumen installs next to Hearth instead of over it. Settings from Hearth are not carried over.
+- **Glass theme** (Look → Theme): frosted clock and weather cards, tiles that lift when selected, and *In the top-left corner* (Clock tab).
+- **Glass colour** (Look): Violet, Graphite, Midnight or Sunset.
+- **Reduce effects (faster)** (Look): no blur, shadows or springy motion.
+- **When Home is pressed** (Look): the first app, or the app opened last.
+- **Show the next hours** (Weather): the next three hours in the Glass weather card.
+- **Home button opens the launcher directly** and **Red / Green / Yellow / Blue button opens** (Options), through LG Input Hook.
+- **Five new wallpapers** in the built-in backgrounds: Aurora, Dunes, Tide, Bloom and Horizon.
+
+---
+
+*Everything below is the history of [Hearth](https://github.com/rudra-avatar/Hearth), which Lumen is built on.*
+
 ## 1.2.0
 
 - **Hearth for WebOS** is the public name; the README now explains the two ways to replace LG Home (helper script, SAM), their known problems, and a recommended setup with Input Hook. The Home key code is 773 on the test remote; others may differ.

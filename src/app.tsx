@@ -56,7 +56,7 @@ const MISC = {lgHome: 'lg-home', settings: 'settings', system: 'system-settings'
 const MISC_TILES: TileModel[] = [
 	{key: MISC.lgHome, label: 'LG Home', glyph: 'house'},
 	{key: MISC.system, label: 'System Settings', glyph: 'tv'},
-	{key: MISC.settings, label: 'Hearth Settings', glyph: 'gear'}
+	{key: MISC.settings, label: 'Lumen Settings', glyph: 'gear'}
 ];
 
 const LAST_OPENED_KEY = 'customlauncher-last-opened';
@@ -140,7 +140,7 @@ export function App () {
 
 	useEffect(() => { document.documentElement.classList.toggle('look-minimal', config.minimal); }, [config.minimal]);
 
-	useEffect(() => { log(`Hearth ${HEARTH_VERSION} started`); return startLogFile(TIMING.backgroundWorkMs + 1000); }, []);
+	useEffect(() => { log(`Lumen ${HEARTH_VERSION} started`); return startLogFile(TIMING.backgroundWorkMs + 1000); }, []);
 
 	const showToast = useCallback((text: string, kind: ToastMessage['kind'] = 'info') => {
 		window.clearTimeout(toastTimer.current);
@@ -244,7 +244,7 @@ export function App () {
 	// In the background the launcher lets go of its wallpaper (the big bitmap) and stops its clock, but it
 	// keeps its screen: if the TV ever reports "hidden" wrongly, the launcher must still be visible,
 	// not a black screen. The state is also re-read every second as a safety net.
-	// (under the takeover too: its watcher asks for this mark after opening Hearth, as the helper does)
+	// (under the takeover too: its watcher asks for this mark after opening Lumen, as the helper does)
 	replaceRef.current = config.replaceHome || config.takeoverHome;
 	useEffect(() => {
 		const sync = (why: string) => {
@@ -328,7 +328,7 @@ export function App () {
 		return undefined;
 	}, [settingsOpen]);
 
-	// "Replace LG Home with a script and SAM": shortly after we come to the front, make sure Hearth still holds LG
+	// "Replace LG Home with a script and SAM": shortly after we come to the front, make sure Lumen still holds LG
 	// Home's place (a restart, or choosing the LG Home tile, puts LG Home back until this runs). Cheap when it is in
 	// place. If this TV cannot do it, the setting turns itself off and LG Home is left as it was.
 	useEffect(() => {
@@ -489,7 +489,7 @@ export function App () {
 
 	const timeFormat: TimeFormat = config.clockFormat === 'tv' ? tvFormat : config.clockFormat;
 
-	/** What the Debug tab shows (built when it opens, not while Hearth runs). */
+	/** What the Debug tab shows (built when it opens, not while Lumen runs). */
 	const buildDebug = () => {
 		const li = listInfo.current;
 		const mins = li ? Math.round((Date.now() - li.at) / 60000) : 0;
@@ -554,7 +554,7 @@ export function App () {
 			const open = () => launchLgHome().catch(() => showToast("Couldn't open LG Home", 'error'));
 			// With LG Home replaced, the real one is put back first (it comes back at the next launch of this launcher).
 			if (config.takeoverHome) {
-				// the real LG Home is put back first (takes a few seconds); Hearth takes its place again once LG Home is left
+				// the real LG Home is put back first (takes a few seconds); Lumen takes its place again once LG Home is left
 				showToast('Opening LG Home…');
 				stockTakeover().then((result) => {
 					if (result === 'stock') open();

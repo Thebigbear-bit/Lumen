@@ -1,4 +1,4 @@
-// The Debug tab: what Hearth knows about this TV and what it has done lately, laid out to fit a screen so a photo
+// The Debug tab: what Lumen knows about this TV and what it has done lately, laid out to fit a screen so a photo
 // of it is enough. Page 1: how to get the log files. Page 2: this TV (state, figures) and the latest events, in small type.
 
 import type {UserConfig} from './storage';
@@ -56,7 +56,7 @@ export function debugPages (s: DebugSnapshot): DebugPage[] {
 	const st = s.stats;
 	state.push('');
 	if (st) {
-		if (st.ramFreeMB >= 0 && st.ramFreeMB < LOW_RAM_MB) state.unshift('FREE RAM TOO LOW: HEARTH MIGHT BEHAVE UNEXPECTEDLY', '');
+		if (st.ramFreeMB >= 0 && st.ramFreeMB < LOW_RAM_MB) state.unshift('FREE RAM TOO LOW: LUMEN MIGHT BEHAVE UNEXPECTEDLY', '');
 		state.push(`Memory: ${gb(st.ramFreeMB)} free of ${gb(st.ramTotalMB)}`);
 		// only the app storage matters (the other mounts are read-only or temporary); other TVs without it show all
 		const appStore = st.disks.filter((d) => d.mount === APP_STORAGE);

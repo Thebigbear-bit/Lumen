@@ -1,8 +1,8 @@
 // Remote buttons through LG Input Hook (a separate Homebrew Channel app that remaps remote buttons).
-// Hearth reads and writes Input Hook's own settings file, so that file is the one source of truth: what
+// Lumen reads and writes Input Hook's own settings file, so that file is the one source of truth: what
 // Settings shows is what the TV really does, also for a binding made by hand or in Input Hook's own app.
 //
-// Hearth manages only a few button codes: Home, and the four colour buttons. For those it adds or removes
+// Lumen manages only a few button codes: Home, and the four colour buttons. For those it adds or removes
 // "launch" bindings; any other binding (other buttons, or a Replace / Execute / Disable on these) is kept.
 
 import {exec} from './apps';
@@ -24,7 +24,7 @@ export const COLOR_CODES: Record<ColorKey, string> = {red: '398', green: '399', 
 export interface RemoteState {
 	/** Input Hook is installed */
 	installed: boolean;
-	/** Home opens Hearth */
+	/** Home opens Lumen */
 	home: boolean;
 	/** the app each colour button opens, or null */
 	keys: Record<ColorKey, string | null>;
@@ -55,7 +55,7 @@ export function parseKeybinds (text: string): Keybinds {
 }
 
 /** The file with the managed buttons set as `want`. Other bindings stay as they are; on a managed button,
- *  only a "launch" binding (the kind Hearth makes) is replaced or removed. */
+ *  only a "launch" binding (the kind Lumen makes) is replaced or removed. */
 export function mergeKeybinds (existing: Keybinds, want: {home: boolean; keys: Record<ColorKey, string | null>}, hearthId: string): Keybinds {
 	const out: Keybinds = {...existing};
 	const set = (code: string, appId: string | null) => {

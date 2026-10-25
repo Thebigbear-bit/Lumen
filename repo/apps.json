@@ -7,25 +7,25 @@
   },
   "packages": [
     {
-      "id": "tld.my.customlauncher",
-      "title": "Hearth for WebOS",
-      "iconUri": "https://raw.githubusercontent.com/rudra-avatar/Hearth/main/public/largeIcon.png",
+      "id": "com.thebigbear.lumen",
+      "title": "Lumen",
+      "iconUri": "https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/public/largeIcon.png",
       "shortDescription": "Fast, calm home screen: clock, weather, apps, inputs, wallpaper.",
-      "fullDescriptionUrl": "https://raw.githubusercontent.com/rudra-avatar/Hearth/main/repo/description.html",
+      "fullDescriptionUrl": "https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/repo/description.html",
       "manifest": {
-        "id": "tld.my.customlauncher",
-        "version": "1.2.0",
+        "id": "com.thebigbear.lumen",
+        "version": "1.0.0",
         "type": "web",
-        "title": "Hearth for WebOS",
-        "appDescription": "A fast, calm home screen for LG webOS TVs: clock, weather, your apps and inputs, wallpaper or slideshow.",
-        "iconUri": "https://raw.githubusercontent.com/rudra-avatar/Hearth/main/public/largeIcon.png",
-        "sourceUrl": "https://github.com/rudra-avatar/Hearth",
+        "title": "Lumen",
+        "appDescription": "When speed meets the light: a fast home screen for LG webOS TVs with a clock, weather, your apps and inputs, and wallpapers.",
+        "iconUri": "https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/public/largeIcon.png",
+        "sourceUrl": "https://github.com/Thebigbear-bit/Lumen",
         "rootRequired": "optional",
-        "ipkUrl": "https://github.com/rudra-avatar/Hearth/releases/download/v1.2.0/tld.my.customlauncher_1.2.0_all.ipk",
+        "ipkUrl": "https://github.com/Thebigbear-bit/Lumen/releases/download/v1.0.0/com.thebigbear.lumen_1.0.0_all.ipk",
         "ipkHash": {
-          "sha256": "8606abaa4f0311df46ca847a0080d1d19307dc176f23243993b6ec5b52eb5b7c"
+          "sha256": "57d6ef5a6d3e6afb07427651d81a555aff64ab116a3baef437f8a7c0ada1cd2a"
         },
-        "ipkSize": 3634284
+        "ipkSize": 4459634
       }
     }
   ]

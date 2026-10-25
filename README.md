@@ -1,14 +1,15 @@
-﻿<p align="center"><img src="public/largeIcon.png" alt="Hearth icon" width="120"></p>
+<p align="center"><img src="tools/icon/lumen-512.png" alt="Lumen icon" width="120"></p>
 
-# Hearth for WebOS: a fast, calm home screen for webOS TVs
+<h1 align="center">Lumen</h1>
+<p align="center"><b><i>When speed meets the light.</i></b><br>A fast, beautiful home screen for LG webOS TVs.</p>
 
-**Hearth for WebOS** is made only for TVs that run webOS (it is not an Android TV app). It targets **webOS 3/4 and it is forward compatible with newer versions** and is **designed for speed**: it starts almost instantly, scrolls smoothly and everything is adjustable from the remote. It replaces the busy home screen with something quiet: a **clock with the date and the weather**, **your apps and TV inputs in one row** along the bottom, and a background that is plain **OLED black**, a **picture**, or a **slideshow** (your own photos or the bundled nature photos).
+**Lumen** is made only for TVs that run webOS (it is not an Android TV app). It targets **webOS 3/4 and it is forward compatible with newer versions** and is **designed for speed**: it starts almost instantly, scrolls smoothly and everything is adjustable from the remote. It replaces the busy home screen with something quiet: a **clock with the date and the weather**, **your apps and TV inputs in one row** along the bottom, and a background that is plain **OLED black**, a **picture**, or a **slideshow** (your own photos or the bundled nature photos).
 
-It is a normal webOS app (app ID `tld.my.customlauncher`). On a rooted TV it can also become the screen the TV boots into and the one the Home button opens.
+It is a normal webOS app (app ID `com.thebigbear.lumen`). On a rooted TV it can also become the screen the TV boots into and the one the Home button opens.
 
-> **Reference device:** an LG TV on firmware **04.60.90 (webOS 7.6.0)**, rooted with the Homebrew Channel. That is where everything is tested. Parts that were not tested on a TV are marked **experimental** below.
+> **Reference devices:** Hearth, which Lumen is built on, is tested on an LG TV on firmware **04.60.90 (webOS 7.6.0)**, rooted with the Homebrew Channel. Lumen's own additions were tried on a rooted LG TV with **webOS 6.5.3**. Parts that were not tested on a TV are marked **experimental** below.
 
-![Hearth home screen](docs/screenshots/home-default.jpg)
+![Lumen home screen](docs/screenshots/home-default.jpg)
 
 | | |
 |---|---|
@@ -16,6 +17,19 @@ It is a normal webOS app (app ID `tld.my.customlauncher`). On a rooted TV it can
 | ![A different clock font](docs/screenshots/home-aurora.jpg) | ![Hold OK on an app for its menu](docs/screenshots/app-menu.jpg) |
 | ![Home with the weather line](docs/screenshots/home-weather.jpg) | ![Quiet mode: only the clock stays](docs/screenshots/quiet-mode.jpg) |
 | ![Back opens the Recent apps panel](docs/screenshots/recents.jpg) | ![Settings, Options tab](docs/screenshots/settings-options.jpg) |
+
+## What's new in Lumen
+
+Lumen is based on [Hearth](https://github.com/rudra-avatar/Hearth) 1.2.0 and adds:
+
+- **Glass theme** in the style of the Apple TV home screen: frosted clock and weather cards, tiles that lift when selected, and an option to put the cards in the top-left corner.
+- **Glass colour:** Violet, Graphite, Midnight or Sunset.
+- **Reduce effects (faster):** turns off blur, shadows and springy motion for slower TVs.
+- **When Home is pressed:** highlight the first app, or the app you opened last.
+- **Next hours** in the Glass weather card: the next three hours of weather.
+- **Remote buttons** through LG Input Hook: the Home button opens Lumen with no flash of LG Home, and the Red, Green, Yellow and Blue buttons can each open an app of your choice.
+- **Five new wallpapers:** Aurora, Dunes, Tide, Bloom and Horizon.
+- A new name, icon and app ID (`com.thebigbear.lumen`), so Lumen installs next to Hearth instead of replacing it.
 
 ## What it does
 
@@ -28,15 +42,15 @@ It is a normal webOS app (app ID `tld.my.customlauncher`). On a rooted TV it can
 - **Your apps and inputs in one row.** Choose what is shown, re-order, or hold OK on an app for *Move to start / left / right / end*, *Hide* and *Uninstall*.
   Back on the home row opens the **Recent apps** panel (rooted TVs). **Refresh list** in Settings → Apps looks for newly installed apps straight away.
 - **Wallpaper.** Plain black (or a calm blue-grey), one picture, or a slideshow of a whole folder from a USB drive or the TV's storage, or the bundled nature photos, with shuffle and an interval from 10 seconds to 1 hour.
-- **Start the TV straight into Hearth.** *Options → Add the launcher as a TV input* adds **Hearth** to the TV's input list, next to HDMI 1 and Live TV. Choose it, set the TV to start on its last input,
-  and the TV boots into Hearth.
+- **Start the TV straight into Lumen.** *Options → Add the launcher as a TV input* adds **Lumen** to the TV's input list, next to HDMI 1 and Live TV. Choose it, set the TV to start on its last input,
+  and the TV boots into Lumen.
 
-  ![Hearth in the TV's input list](docs/screenshots/tv-input.jpg)
-- **The Home button opens Hearth** (instead of LG Home), with a helper script or the SAM method (see *Replacing LG Home*), and a switch for LG's own **"Show LG logo when the TV starts"**
+  ![Lumen in the TV's input list](docs/screenshots/tv-input.jpg)
+- **The Home button opens Lumen** (instead of LG Home), with a helper script or the SAM method (see *Replacing LG Home*), and a switch for LG's own **"Show LG logo when the TV starts"**
   setting (normally hidden in a secret menu) for a clean start.
 - **Made to be fast.** The home screen is drawn from saved data first; everything else (app list, weather, helper checks) happens a few seconds later in the background.
-  While another app is in front, Hearth lets go of its wallpaper and stops its clock.
-- **Clear messages.** When something can't work on your TV, Hearth says what and why instead of failing silently, and greys out the options that need a rooted TV.
+  While another app is in front, Lumen lets go of its wallpaper and stops its clock.
+- **Clear messages.** When something can't work on your TV, Lumen says what and why instead of failing silently, and greys out the options that need a rooted TV.
 
 
 ## What works on which TV
@@ -46,27 +60,27 @@ It is a normal webOS app (app ID `tld.my.customlauncher`). On a rooted TV it can
 | | |
 |---|---|
 | Reference device (everything tested) | Firmware **04.60.90**, **webOS 7.6.0**, rooted, Homebrew Channel 0.7.3 |
-| Also reported by users | LG firmware **03.01.16** (reported as webOS 8.0.0), webOS 6.x (a Settings display bug found there was fixed in 1.1.0) and the webOS 4.x TV it was first built on |
-| Newer versions | **Should work.** Hearth is compiled for old web views (Chrome 53) and uses only standard web features and TV services that LG keeps across versions. Please report anything odd |
+| Also reported by users | LG firmware **03.01.16** (reported as webOS 8.0.0), webOS 6.x (a Settings display bug found there was fixed in Lumen 1.1.0) and the webOS 4.x TV it was first built on |
+| Newer versions | **Should work.** Lumen is compiled for old web views (Chrome 53) and uses only standard web features and TV services that LG keeps across versions. Please report anything odd |
 
 ### Rooted TV (Homebrew Channel): everything
 
-The Homebrew Channel lets Hearth run a few fixed commands on the TV. That powers the live app list with real icons, the Recent apps panel, USB/storage browsing for wallpapers, replacing LG Home, the TV input, the LG logo switch and uninstalling apps.
+The Homebrew Channel lets Lumen run a few fixed commands on the TV. That powers the live app list with real icons, the Recent apps panel, USB/storage browsing for wallpapers, replacing LG Home, the TV input, the LG logo switch and uninstalling apps.
 
 ### Not rooted (only Developer Mode): the core, with the extras greyed out
 
-> **Experimental / not tested on a non-rooted TV.** This is how Hearth is designed to behave.
+> **Experimental / not tested on a non-rooted TV.** This is how Lumen is designed to behave.
 
 - Expected to work: the home screen, clock and date, the **weather** (it uses the web view's own internet connection), themes, sizes, fonts and colours, the built-in list of common apps, and launching apps.
 - Needs root, so it is **greyed out with the reason** shown: everything on the Options tab (TV input, replacing LG Home, LG logo), the Recent apps panel, reading USB/storage for wallpapers, and uninstalling apps.
-- Without root, Hearth is an app you open yourself; it cannot replace LG Home or start the TV into itself.
+- Without root, Lumen is an app you open yourself; it cannot replace LG Home or start the TV into itself.
 - **More apps on the row without root:** the built-in list only shows well-known apps. Two ways to get the rest:
-  - **Experimental, not tested: Settings, Options, "Load apps from the TV".** Hearth asks the TV for its full app list through LG's remote-control service, with no root and no computer. Turn on "LG Connect Apps" in the TV's settings, choose the row, and press OK on the TV when it asks to allow the connection. It may not work on every TV or firmware; when it fails, the built-in list stays. The pairing key is kept only inside Hearth. The row is hidden on rooted TVs.
+  - **Experimental, not tested: Settings, Options, "Load apps from the TV".** Lumen asks the TV for its full app list through LG's remote-control service, with no root and no computer. Turn on "LG Connect Apps" in the TV's settings, choose the row, and press OK on the TV when it asks to allow the connection. It may not work on every TV or firmware; when it fails, the built-in list stays. The pairing key is kept only inside Lumen. The row is hidden on rooted TVs.
   - **By hand.** The [partridgeworks/webos-launcher](https://github.com/partridgeworks/webos-launcher) guide explains how to add custom apps and icons.
 
 ### Experimental, not tested on a TV
 
-- **webOS 3.x (Chromium 38).** There is no webOS 3 TV to try it on; the build follows the web view's known limits and a contributor's pull requests. One install file serves every TV: a loader checks whether the web view supports CSS custom properties (Chrome 49+, so everything from webOS 4). Newer TVs load `assets/app.js`; webOS 3 TVs load `assets/app.legacy.js` (ES5 with polyfills, custom properties worked out by the app, `src/lib/cssvars.ts`). On webOS 3 the *helper script* opens Hearth when the Home bar is shown; the SAM method does not apply. webOS 1 and 2 are not supported (no known way to root them).
+- **webOS 3.x (Chromium 38).** There is no webOS 3 TV to try it on; the build follows the web view's known limits and a contributor's pull requests. One install file serves every TV: a loader checks whether the web view supports CSS custom properties (Chrome 49+, so everything from webOS 4). Newer TVs load `assets/app.js`; webOS 3 TVs load `assets/app.legacy.js` (ES5 with polyfills, custom properties worked out by the app, `src/lib/cssvars.ts`). On webOS 3 the *helper script* opens Lumen when the Home bar is shown; the SAM method does not apply. webOS 1 and 2 are not supported (no known way to root them).
 - **webOS 11 permission fix** (see below).
 - **The no-root TV app list** (above).
 
@@ -77,27 +91,27 @@ The Homebrew Channel lets Hearth run a few fixed commands on the TV. That powers
 1. Open the **Homebrew Channel** on the TV and go to **Settings**.
 2. Choose **Add repository** and type this address:
 
-   `https://raw.githubusercontent.com/rudra-avatar/Hearth/main/repo/apps.json`
+   `https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/repo/apps.json`
 
    (Typing with the remote is slow. From a computer on the same network you can send it instead, over SSH:
-   `ares-launch org.webosbrew.hbchannel -p '{"launchMode":"addRepository","url":"https://raw.githubusercontent.com/rudra-avatar/Hearth/main/repo/apps.json"}'`)
-3. Go back to the app list, open **Hearth** and choose **Install**.
-4. **Updating:** when a new version is released, open the Homebrew Channel, open Hearth and it shows the new version
+   `ares-launch org.webosbrew.hbchannel -p '{"launchMode":"addRepository","url":"https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/repo/apps.json"}'`)
+3. Go back to the app list, open **Lumen** and choose **Install**.
+4. **Updating:** when a new version is released, open the Homebrew Channel, open Lumen and it shows the new version
    (for example "1.3.0 (installed: 1.2.0)") with an **Update** button. Your settings are kept.
 
 ### Option 2: install the file yourself
 
-Download `tld.my.customlauncher_1.2.0_all.ipk` from the [Releases](../../releases) page, then either use
+Download `com.thebigbear.lumen_1.0.0_all.ipk` from the [Releases](../../releases) page, then either use
 [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop) (a desktop app; no root needed, only Developer Mode), or over SSH on a rooted TV:
 
 ```
-scp -O tld.my.customlauncher_1.2.0_all.ipk root@TV_IP:/tmp/
+scp -O com.thebigbear.lumen_1.0.0_all.ipk root@TV_IP:/tmp/
 ssh root@TV_IP
-luna-send -i luna://com.webos.appInstallService/dev/install '{"id":"com.ares.defaultName","ipkUrl":"/tmp/tld.my.customlauncher_1.2.0_all.ipk","subscribe":true}'
-luna-send -n 1 luna://com.webos.applicationManager/launch '{"id":"tld.my.customlauncher"}'
+luna-send -i luna://com.webos.appInstallService/dev/install '{"id":"com.ares.defaultName","ipkUrl":"/tmp/com.thebigbear.lumen_1.0.0_all.ipk","subscribe":true}'
+luna-send -n 1 luna://com.webos.applicationManager/launch '{"id":"com.thebigbear.lumen"}'
 ```
 
-Installing over an older version keeps your settings. To remove Hearth, turn off *Replace LG Home with a helper script* (or *Replace LG Home with a script and SAM*) first, then uninstall "Hearth"
+Installing over an older version keeps your settings. To remove Lumen, turn off *Replace LG Home with a helper script* (or *Replace LG Home with a script and SAM*) first, then uninstall "Lumen"
 from the Homebrew Channel or Dev Manager.
 
 ## Using it
@@ -105,7 +119,7 @@ from the Homebrew Channel or Dev Manager.
 | Where | Key | Does |
 |---|---|---|
 | Home | ← → | Move along the row |
-| Home | OK | Open the app. The last three tiles are **LG Home**, **System Settings** and **Hearth Settings** |
+| Home | OK | Open the app. The last three tiles are **LG Home**, **System Settings** and **Lumen Settings** |
 | Home | hold OK | The app's menu: move it, hide it, uninstall it |
 | Home | Back | Open the Recent apps panel (OK opens an app, hold OK closes it, ↑ Close all) |
 | Settings | ← → on the tab bar | Apps · Sources · Look · Clock · Weather · Wallpaper · Options |
@@ -132,10 +146,10 @@ from the Homebrew Channel or Dev Manager.
 **Play this folder as a slideshow** plays every picture in the folder. Use JPG, PNG, WebP or BMP. A web app cannot read files itself, so on a rooted TV the Homebrew Channel's service reads them in small pieces.
 If it can't, the screen says why and offers **Try again**.
 
-**Before you choose:** big pictures slow the launcher down when it loads them, so the smaller the file, the faster Hearth starts. The hard limit is **8 MB and 25 megapixels** per picture (a 4K picture is about 8 megapixels).
+**Before you choose:** big pictures slow the launcher down when it loads them, so the smaller the file, the faster Lumen starts. The hard limit is **8 MB and 25 megapixels** per picture (a 4K picture is about 8 megapixels).
 A picture over the limit is skipped in a slideshow and refused as a single wallpaper.
 
-**Copying your own pictures to the TV** (the TV must be rooted; `<TV address>` is the **IP:** number at the bottom right of Hearth's Settings, or in the TV's own network settings):
+**Copying your own pictures to the TV** (the TV must be rooted; `<TV address>` is the **IP:** number at the bottom right of Lumen's Settings, or in the TV's own network settings):
 
 1. Put the pictures in `/media/developer` (the picker shows it as *Internal storage*), or plug in a USB drive and skip the copying.
 2. **From a computer with SSH:** `scp photo.jpg root@<TV address>:/media/developer/`. If `scp` fails, try `scp -O photo.jpg root@<TV address>:/media/developer/`.
@@ -144,8 +158,8 @@ A picture over the limit is skipped in a slideshow and refused as a single wallp
 
 ### Weather and privacy
 
-The weather comes from [Open-Meteo](https://open-meteo.com) (free, no account). The only thing sent is the latitude and longitude of the city you chose (and the words you type in the city search). It is fetched a few seconds after Hearth appears, then every 30 minutes
-while Hearth is in front, and the last reading is kept so the home screen never waits for the internet. A reading older than 6 hours is not shown. If the TV's web view cannot make a secure connection (some older TVs can't), Hearth asks the TV's own `curl` or `wget` through the Homebrew Channel instead;
+The weather comes from [Open-Meteo](https://open-meteo.com) (free, no account). The only thing sent is the latitude and longitude of the city you chose (and the words you type in the city search). It is fetched a few seconds after Lumen appears, then every 30 minutes
+while Lumen is in front, and the last reading is kept so the home screen never waits for the internet. A reading older than 6 hours is not shown. If the TV's web view cannot make a secure connection (some older TVs can't), Lumen asks the TV's own `curl` or `wget` through the Homebrew Channel instead;
 the last-resort attempts skip the certificate check, which is acceptable for public weather numbers that are only ever read as numbers and a place name.
 
 ## Replacing LG Home (rooted TVs)
@@ -154,18 +168,18 @@ There are two built-in methods and one outside helper. Each has a known problem;
 
 ### Method 1: helper script (Settings, Options, "Replace LG Home with a helper script")
 
-A small background helper watches which app the TV reports as being in front. When that becomes LG Home (Home button, leaving an app with Back, boot) it opens Hearth instead. **Nothing is replaced or mounted.**
+A small background helper watches which app the TV reports as being in front. When that becomes LG Home (Home button, leaving an app with Back, boot) it opens Lumen instead. **Nothing is replaced or mounted.**
 
-- It starts at boot (a link in the TV's startup folder) and also whenever Hearth is on screen.
-- **Problem: LG Home can flash for a moment** before Hearth opens, because the helper can only react once LG Home is already in front. Use it with the **Input Hook** app (below) and map the Home button.
+- It starts at boot (a link in the TV's startup folder) and also whenever Lumen is on screen.
+- **Problem: LG Home can flash for a moment** before Lumen opens, because the helper can only react once LG Home is already in front. Use it with the **Input Hook** app (below) and map the Home button.
 - The "LG Home" tile still opens LG's own Home.
-- **Turn it off before uninstalling Hearth.** Reversal steps and a diagnostics script: [`src/homehook/README.md`](src/homehook/README.md).
+- **Turn it off before uninstalling Lumen.** Reversal steps and a diagnostics script: [`src/homehook/README.md`](src/homehook/README.md).
 
 ### Method 2: script and SAM (Settings, Options, "Replace LG Home with a script and SAM")
 
-The TV opens Hearth through LG Home's own place, so **LG Home is never drawn**. It cannot be on together with the helper script (each greys the other out). Tested by the maintainer on webOS 7.
+The TV opens Lumen through LG Home's own place, so **LG Home is never drawn**. It cannot be on together with the helper script (each greys the other out). Tested by the maintainer on webOS 7.
 
-- A small black stand-in is bind-mounted over LG Home's app folder and the TV's app manager (SAM) is restarted **once** (the screen may blink). A root watcher then opens Hearth when the stand-in comes to the front. The mount lives in memory; a link in the startup folder redoes it at each start.
+- A small black stand-in is bind-mounted over LG Home's app folder and the TV's app manager (SAM) is restarted **once** (the screen may blink). A root watcher then opens Lumen when the stand-in comes to the front. The mount lives in memory; a link in the startup folder redoes it at each start.
 - **Problem: it starts late in boot,** about 30-35 s after power-on. Until then it works like the helper script, so LG Home can still flash in that window.
 - **Problem: the TV's aspect-ratio setting does not work while it is active.** It works again after you turn the method off and reboot the TV.
 - The "LG Home" tile does nothing while it is on; switch the setting off to use LG's own Home.
@@ -173,36 +187,36 @@ The TV opens Hearth through LG Home's own place, so **LG Home is never drawn**. 
 
 ### Input Hook (flash-free Home button)
 
-[LG Input Hook](https://github.com/Simon34545/lginputhook) (an app in the Homebrew Channel) can open Hearth when Home is pressed, before LG Home is drawn. Hearth cannot find the Home button's key code for you (an app on the TV is not given that key), so map it in Input Hook's own screen:
+[LG Input Hook](https://github.com/Simon34545/lginputhook) (an app in the Homebrew Channel) can open Lumen when Home is pressed, before LG Home is drawn. Lumen cannot find the Home button's key code for you (an app on the TV is not given that key), so map it in Input Hook's own screen:
 
 1. Install **LG Input Hook** from the Homebrew Channel and open it once (this gives it root and starts it at boot).
-2. In Input Hook, bind the Home button to **launch** the app `tld.my.customlauncher`. The key code is **773 on the test remote; yours may differ, check it in Input Hook.**
+2. In Input Hook, bind the Home button to **launch** the app `com.thebigbear.lumen`. The key code is **773 on the test remote; yours may differ, check it in Input Hook.**
    Or over SSH (check the code in `/tmp/lginput-hook-micomservice.log` first):
    ```
-   echo '{"773":{"action":"launch","id":"tld.my.customlauncher"}}' > /home/root/.config/lginputhook/keybinds.json
+   echo '{"773":{"action":"launch","id":"com.thebigbear.lumen"}}' > /home/root/.config/lginputhook/keybinds.json
    ```
 
-The binding is stored with Input Hook, so it survives Hearth updates. To undo it, delete the binding in Input Hook (or write `{}` to that file). Input Hook is a separate project; these steps came from iulyax27 (pull request #8) and have not been checked on a TV by the maintainer.
+The binding is stored with Input Hook, so it survives Lumen updates. To undo it, delete the binding in Input Hook (or write `{}` to that file). Input Hook is a separate project; these steps came from iulyax27 (pull request #8) and have not been checked on a TV by the maintainer.
 
 ### Recommended setup (rooted TV)
 
-1. Install Hearth from the Homebrew Channel (see Install).
-2. In Hearth: **Settings, Options, "Add the launcher as a TV input".** Hearth now appears in the TV's input list next to HDMI 1.
-3. In the TV's own settings, make the TV start on its **last input** (the menu name varies by model). Select the **Hearth** input once; from now on the TV boots into Hearth.
-4. In Hearth: turn on **"Replace LG Home with a helper script"**.
-5. Install **LG Input Hook**, open it once, and map the **Home** button to launch `tld.my.customlauncher` (steps above).
+1. Install Lumen from the Homebrew Channel (see Install).
+2. In Lumen: **Settings, Options, "Add the launcher as a TV input".** Lumen now appears in the TV's input list next to HDMI 1.
+3. In the TV's own settings, make the TV start on its **last input** (the menu name varies by model). Select the **Lumen** input once; from now on the TV boots into Lumen.
+4. In Lumen: turn on **"Replace LG Home with a helper script"**.
+5. Install **LG Input Hook**, open it once, and map the **Home** button to launch `com.thebigbear.lumen` (steps above).
 6. Optional: turn off the LG logo at start-up (**"Show the LG logo when the TV starts"**).
 
 If a rooted TV says "the TV refused the command", or the Homebrew Channel gives elevation errors, see Troubleshooting.
 
 ## webOS 11: one extra step on rooted TVs
 
-On webOS 11 (tested on an LG C4, firmware 43.21.73, by ganondorft) the TV only lets an app use the Homebrew Channel's command service when the app's Luna permissions include `org.webosbrew.hbchannel.service.group`. The app installer leaves that out for Hearth, so even on a rooted TV every option that needs root is greyed out with *"the TV refused the command"*, the app icons are letters, and the wallpaper picker can't read the storage. Older webOS versions do not need this.
+On webOS 11 (tested on an LG C4, firmware 43.21.73, by ganondorft) the TV only lets an app use the Homebrew Channel's command service when the app's Luna permissions include `org.webosbrew.hbchannel.service.group`. The app installer leaves that out for Lumen, so even on a rooted TV every option that needs root is greyed out with *"the TV refused the command"*, the app icons are letters, and the wallpaper picker can't read the storage. Older webOS versions do not need this.
 
-The script `tools/webos11-permission.sh` (inside the app) adds the permission. The installer writes Hearth's permission file again on every install or update, so the script installs itself as a boot hook that checks it at each start. Once, over SSH on the TV:
+The script `tools/webos11-permission.sh` (inside the app) adds the permission. The installer writes Lumen's permission file again on every install or update, so the script installs itself as a boot hook that checks it at each start. Once, over SSH on the TV:
 
 ```
-sh /media/developer/apps/usr/palm/applications/tld.my.customlauncher/tools/webos11-permission.sh
+sh /media/developer/apps/usr/palm/applications/com.thebigbear.lumen/tools/webos11-permission.sh
 ```
 
 Or from a computer, with the file from this repository (`public/tools/`):
@@ -212,7 +226,7 @@ scp -O webos11-permission.sh root@TV_IP:/var/lib/webosbrew/init.d/40-hearth-perm
 ssh root@TV_IP 'chmod 755 /var/lib/webosbrew/init.d/40-hearth-permission; sh /var/lib/webosbrew/init.d/40-hearth-permission'
 ```
 
-Then close and reopen Hearth. After updating Hearth, restart the TV (or run the command again). To undo it, delete `/var/lib/webosbrew/init.d/40-hearth-permission` and reinstall Hearth. Not yet checked on a TV by the Hearth maintainer (the install path inside the app is the usual one for Homebrew installs).
+Then close and reopen Lumen. After updating Lumen, restart the TV (or run the command again). To undo it, delete `/var/lib/webosbrew/init.d/40-hearth-permission` and reinstall Lumen. Not yet checked on a TV by the Lumen maintainer (the install path inside the app is the usual one for Homebrew installs).
 
 ## Troubleshooting
 
@@ -227,10 +241,12 @@ Then close and reopen Hearth. After updating Hearth, restart the TV (or run the 
 
 ## Credits
 
+**Lumen is based on [Hearth](https://github.com/rudra-avatar/Hearth) by rudra-avatar** (MIT), which is itself a modified version of [partridgeworks/webos-launcher](https://github.com/partridgeworks/webos-launcher). The credits below are Hearth's, kept as they were.
+
 **Code contributions** (applied by hand into Hearth's own code; authors credited in the commits and the changelog):
 
 - **Alejandro Morales**, pull request #1: slideshow shuffle that survives restarts.
-- **chriskoperdraad-tech**, pull requests #2 and #3: webOS 3.x (Chromium 38) support. The Home-bar watcher lines are theirs; the ES5 build and the custom-property fallback are Hearth's own code.
+- **chriskoperdraad-tech**, pull requests #2 and #3: webOS 3.x (Chromium 38) support. The Home-bar watcher lines are theirs; the ES5 build and the custom-property fallback are Lumen's own code.
 - **ganondorft**, pull request #6: the webOS 11 permission fix and the Windows line-ending fix.
 - **iulyax27**, pull requests #8 and #10: icon batches, the Input Hook guide, and the ideas for quiet mode and OLED shift.
 - **Recent apps panel, icon shapes and bottom fade:** community contribution, author not named. The idea and the TV services to call came from it; Hearth's code is its own.
@@ -258,7 +274,7 @@ Needs Node 18+.
 npm install
 npm test           # unit tests, plus the home-screen helper's shell tests
 npm run build      # type-check, then build dist/ (app.js for Chrome 53+, app.legacy.js for webOS 3.x / Chromium 38)
-npm run package    # dist/ -> build/tld.my.customlauncher_<version>_all.ipk
+npm run package    # dist/ -> build/com.thebigbear.lumen_<version>_all.ipk
 ```
 
 `npm run dev` serves the UI in a desktop browser with sample apps and folders.

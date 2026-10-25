@@ -7,3 +7,4 @@ build/
 # local, per-person settings
 tv.env
 src/config/catalog.local.ts
+scripts/.cache-*.mjs

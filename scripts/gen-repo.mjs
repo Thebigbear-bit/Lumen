@@ -29,7 +29,7 @@ if (basename(ipk) !== expected) {
 }
 const data = readFileSync(ipk);
 // the name shown in Homebrew Channel listings (the app's own on-TV name stays appinfo.title)
-const LISTING_TITLE = 'Hearth for WebOS';
+const LISTING_TITLE = 'Lumen';
 const raw = `https://raw.githubusercontent.com/${repo}/main`;
 
 const manifest = {
@@ -37,7 +37,7 @@ const manifest = {
 	version: appinfo.version,
 	type: appinfo.type,
 	title: LISTING_TITLE,
-	appDescription: 'A fast, calm home screen for LG webOS TVs: clock, weather, your apps and inputs, wallpaper or slideshow.',
+	appDescription: 'When speed meets the light: a fast home screen for LG webOS TVs with a clock, weather, your apps and inputs, and wallpapers.',
 	iconUri: `${raw}/public/largeIcon.png`,
 	sourceUrl: `https://github.com/${repo}`,
 	rootRequired: 'optional',

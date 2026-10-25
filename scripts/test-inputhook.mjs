@@ -10,11 +10,11 @@ const h = await import(out);
 let fail = 0;
 const eq = (a, b, m) => { const ok = JSON.stringify(a) === JSON.stringify(b); if (!ok) { fail++; console.log('FAIL', m, JSON.stringify(a), '!=', JSON.stringify(b)); } else console.log('ok  ', m); };
 
-const ME = 'tld.my.customlauncher';
+const ME = 'com.thebigbear.lumen';
 const none = {red: null, green: null, yellow: null, blue: null};
 
 // reading
-eq(h.readState('{"773":{"action":"launch","id":"tld.my.customlauncher"}}', ME), {installed: true, home: true, keys: none}, 'a Home binding made by hand is seen as on');
+eq(h.readState('{"773":{"action":"launch","id":"com.thebigbear.lumen"}}', ME), {installed: true, home: true, keys: none}, 'a Home binding made by hand is seen as on');
 eq(h.readState('{"399":{"action":"launch","id":"netflix"},"400":{"action":"replace","keycode":1}}', ME).keys, {red: null, green: 'netflix', yellow: null, blue: null}, 'colour buttons: only launch bindings count');
 eq(h.readState('not json', ME), {installed: true, home: false, keys: none}, 'a broken file reads as nothing set');
 eq(h.readState('{"773":{"action":"launch","id":"x; rm -rf /"}}', ME).home, false, 'an odd app id is ignored');
@@ -22,7 +22,7 @@ eq(h.readState('{"773":{"action":"launch","id":"x; rm -rf /"}}', ME).home, false
 // writing
 const mine = {'1031': {action: 'exec', command: 'echo hi'}, '400': {action: 'ignore'}};
 const merged = h.mergeKeybinds(mine, {home: true, keys: {red: 'netflix', green: null, yellow: 'youtube.leanback.v4', blue: null}}, ME);
-eq(merged['773'], {action: 'launch', id: ME}, 'Home on: launches Hearth');
+eq(merged['773'], {action: 'launch', id: ME}, 'Home on: launches Lumen');
 eq(merged['398'], {action: 'launch', id: 'netflix'}, 'red: launches the chosen app');
 eq(merged['1031'], {action: 'exec', command: 'echo hi'}, 'other buttons are left as they are');
 eq(merged['400'], {action: 'ignore'}, "a managed button with the user's own Disable is not taken over");

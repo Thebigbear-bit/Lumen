@@ -18,7 +18,7 @@ import {
 export type {HookResult, HookStatus};
 
 // The TV's shell reads a carriage return as part of the word ("then\r"), so scripts from a Windows checkout would fail
-// with "syntax error". Always send them with plain line ends (idea from pull request #6, ganondorft).
+// with "syntax error". Always send them with plain line ends (idea from Hearth pull request #6, ganondorft).
 const lf = (text: string): string => text.replace(/\r\n?/g, '\n');
 const FILES = {watchSh: lf(watchSh), applySh: lf(applySh), stockSh: lf(stockSh), diagnoseSh: lf(diagnoseSh)};
 

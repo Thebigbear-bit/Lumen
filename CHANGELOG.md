@@ -1,5 +1,10 @@
 # Changelog
 
+## Lumen 1.0.1
+
+- **When Home is pressed** now goes back to the app you opened last by default (also apps opened from the Recent apps panel), and the highlight goes straight there.
+- **Next hours** in the Glass weather card now show after a restart too, and start after the current hour.
+
 ## Lumen 1.0.0
 
 The first release of **Lumen** (*when speed meets the light*), based on Hearth 1.2.0.

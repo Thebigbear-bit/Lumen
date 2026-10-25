@@ -167,7 +167,8 @@ export interface UserConfig {
 	glassTint: GlassTint;
 	/** no blur and simpler motion (faster on slow TVs) */
 	reduceEffects: boolean;
-	homeFocus: HomeFocus;
+	/** where the highlight goes when Home is pressed (stored as homeReturn: the default changed to 'last' in 1.0.1) */
+	homeReturn: HomeFocus;
 }
 
 export const THEME_IDS: ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist', 'glass'];
@@ -242,7 +243,7 @@ export const DEFAULT_CONFIG: UserConfig = {
 	wallpaper: DEFAULT_WALLPAPER,
 	glassTint: 'violet',
 	reduceEffects: false,
-	homeFocus: 'first'
+	homeReturn: 'last'
 };
 
 function stringList (value: unknown): string[] | null {
@@ -335,7 +336,7 @@ export function loadConfig (): UserConfig {
 			},
 			glassTint: GLASS_TINTS.indexOf(parsed.glassTint as GlassTint) !== -1 ? parsed.glassTint as GlassTint : 'violet',
 			reduceEffects: parsed.reduceEffects === true,
-			homeFocus: parsed.homeFocus === 'last' ? 'last' : 'first'
+			homeReturn: parsed.homeReturn === 'first' ? 'first' : 'last'
 		};
 	} catch {
 		return {...DEFAULT_CONFIG};

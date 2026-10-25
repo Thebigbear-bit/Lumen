@@ -1,3 +1,4 @@
+import {writeLastOpened} from '../lib/lastopened';
 import {useCallback, useEffect, useRef, useState} from 'preact/hooks';
 import {varScope} from '../lib/cssvars';
 import {Row} from '../components/Row';
@@ -53,7 +54,7 @@ export function Recents ({icons, width, height, onClose, onToast}: Props) {
 			else onToast(ids.length > 1 ? `Closed ${ids.length} apps` : `Closed ${label}`);
 		}));
 	};
-	const open = (a?: RecentApp) => { if (a) launchApp(a.id).then(() => onClose(), () => onToast(`Couldn't open ${a.title}`, 'error')); };
+	const open = (a?: RecentApp) => { if (!a) return; writeLastOpened(a.id); launchApp(a.id).then(() => onClose(), () => onToast(`Couldn't open ${a.title}`, 'error')); };
 
 	const handleKey = useCallback((key: NavKey): boolean => {
 		if (key === 'back') { onClose(); return true; }

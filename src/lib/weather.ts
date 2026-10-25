@@ -56,7 +56,7 @@ export function validCoords (lat: unknown, lon: unknown): boolean {
 
 export function forecastUrl (lat: number, lon: number): string {
 	return 'https://api.open-meteo.com/v1/forecast?latitude=' + coord(lat) + '&longitude=' + coord(lon)
-		+ '&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&forecast_hours=4'
+		+ '&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&forecast_hours=6'
 		+ '&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto';
 }
 
@@ -74,22 +74,24 @@ export function parseWeather (json: string, lat: number, lon: number, now: numbe
 		if (temp === null || code === null) return null;
 		const daily = data.daily || {};
 		const first = (list: unknown): number | null => (Array.isArray(list) ? num(list[0]) : null);
-		return {lat, lon, tempC: temp, highC: first(daily.temperature_2m_max), lowC: first(daily.temperature_2m_min), code, isDay: current.is_day !== 0, at: now, hours: parseHours(data.hourly)};
+		return {lat, lon, tempC: temp, highC: first(daily.temperature_2m_max), lowC: first(daily.temperature_2m_min), code, isDay: current.is_day !== 0, at: now, hours: parseHours(data.hourly, typeof current.time === 'string' ? current.time : '')};
 	} catch {
 		return null;
 	}
 }
 
-/** The hours after the current one (the hourly list starts at the current hour). Bad entries are skipped. */
-function parseHours (hourly: unknown): HourData[] {
+/** The next three hours after `currentTime` (Open-Meteo's "2026-10-26T02:15", the place's own time; the hourly list
+ *  can start an hour or so before it). Bad entries are skipped. */
+export function parseHours (hourly: unknown, currentTime = ''): HourData[] {
 	const h = (hourly && typeof hourly === 'object' ? hourly : {}) as Record<string, unknown>;
 	const times = Array.isArray(h.time) ? h.time : [];
 	const temps = Array.isArray(h.temperature_2m) ? h.temperature_2m : [];
 	const codes = Array.isArray(h.weather_code) ? h.weather_code : [];
 	const days = Array.isArray(h.is_day) ? h.is_day : [];
 	const out: HourData[] = [];
-	for (let i = 1; i < times.length && out.length < 3; i++) {
-		const match = typeof times[i] === 'string' ? /T(\d{2}):/.exec(times[i] as string) : null;
+	for (let i = 0; i < times.length && out.length < 3; i++) {
+		if (typeof times[i] !== 'string' || (currentTime ? (times[i] as string) <= currentTime : i === 0)) continue;
+		const match = /T(\d{2}):/.exec(times[i] as string);
 		const tempC = num(temps[i]), code = num(codes[i]);
 		if (!match || tempC === null || code === null) continue;
 		out.push({hour: Number(match[1]), tempC, code, isDay: days[i] !== 0});
@@ -168,11 +170,12 @@ export interface WeatherView {
 }
 
 /** What the clock shows. */
-export function weatherView (data: WeatherData, unit: TempUnit, showRange: boolean, cityName: string, showHours = false): WeatherView {
+export function weatherView (data: WeatherData, unit: TempUnit, showRange: boolean, cityName: string, showHours = false, now = Date.now()): WeatherView {
 	const d = describe(data.code, data.isDay);
 	const range = showRange && data.highC !== null && data.lowC !== null ? 'H ' + formatTemp(data.highC, unit) + '  L ' + formatTemp(data.lowC, unit) : '';
 	const temp = formatTemp(data.tempC, unit);
-	const hours = showHours && data.hours ? data.hours.map((h) => ({hour: h.hour, temp: formatTemp(h.tempC, unit), icon: describe(h.code, h.isDay).icon})) : [];
+	// the next hours only from a reading under an hour old (an older one would list hours already gone)
+	const hours = showHours && data.hours && now - data.at < 3600000 ? data.hours.map((h) => ({hour: h.hour, temp: formatTemp(h.tempC, unit), icon: describe(h.code, h.isDay).icon})) : [];
 	return {icon: d.icon, main: temp + ' ' + d.text, temp, text: d.text, range, city: cityName, hours};
 }
 
@@ -185,13 +188,20 @@ export function usableCached (data: WeatherData | null, lat: number, lon: number
 	return data && data.lat === lat && data.lon === lon && now - data.at < SHOWN_MS && now >= data.at ? data : null;
 }
 
+/** The next hours as saved (kept so they show at start-up too, before the next reading). */
+function savedHours (list: unknown): HourData[] {
+	if (!Array.isArray(list)) return [];
+	return list.filter((h) => h && num(h.hour) !== null && h.hour >= 0 && h.hour <= 23 && num(h.tempC) !== null && num(h.code) !== null)
+		.slice(0, 3).map((h) => ({hour: h.hour, tempC: h.tempC, code: h.code, isDay: h.isDay !== false}));
+}
+
 export function readWeatherCache (): WeatherData | null {
 	try {
 		const raw = localStorage.getItem(WEATHER_CACHE_KEY);
 		if (!raw) return null;
 		const d = JSON.parse(raw);
 		if (!validCoords(d.lat, d.lon) || num(d.tempC) === null || num(d.code) === null || num(d.at) === null) return null;
-		return {lat: d.lat, lon: d.lon, tempC: d.tempC, highC: num(d.highC), lowC: num(d.lowC), code: d.code, isDay: d.isDay !== false, at: d.at};
+		return {lat: d.lat, lon: d.lon, tempC: d.tempC, highC: num(d.highC), lowC: num(d.lowC), code: d.code, isDay: d.isDay !== false, at: d.at, hours: savedHours(d.hours)};
 	} catch {
 		return null;
 	}

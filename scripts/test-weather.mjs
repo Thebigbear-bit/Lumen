@@ -45,4 +45,17 @@ eq(w.geocodeUrl('São Paulo & co').indexOf('name=S%C3%A3o%20Paulo%20%26%20co') >
 
 const cmd = n.shellFetchCommand('https://x.test/a?b=1&c=2');
 eq([cmd.indexOf("U='https://x.test/a?b=1&c=2';") === 0, cmd.indexOf('curl') > 0, cmd.indexOf('wget') > 0], [true, true, true], 'shell fallback tries curl then wget');
+// the next hours (Glass weather card)
+const hourly = {time: ['2026-10-26T01:00', '2026-10-26T02:00', '2026-10-26T03:00', '2026-10-26T04:00', '2026-10-26T05:00', '2026-10-26T06:00'],
+	temperature_2m: [20, 20.4, 19.6, 19, 18.5, 18], weather_code: [0, 0, 1, 2, 3, 0], is_day: [0, 0, 0, 0, 0, 1]};
+eq(w.parseHours(hourly, '2026-10-26T02:15').map((h) => h.hour), [3, 4, 5], 'next hours start after the current time, even when the list starts earlier');
+eq(w.parseHours(hourly, '2026-10-26T02:00').map((h) => h.hour), [3, 4, 5], 'the current hour itself is not a "next" hour');
+eq(w.parseHours(hourly).map((h) => h.hour), [2, 3, 4], 'without the current time, the first entry is skipped as before');
+const withHours = w.parseWeather(JSON.stringify({current: {time: '2026-10-26T02:15', temperature_2m: 20.4, weather_code: 0, is_day: 0}, hourly, daily: {}}), 28.61, 77.21, 5000);
+const store = {};
+globalThis.localStorage = {getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }};
+w.writeWeatherCache(withHours);
+eq(w.readWeatherCache().hours.map((h) => h.hour), [3, 4, 5], 'the next hours survive being saved and read back (they show after a restart)');
+eq(w.weatherView(withHours, 'c', false, '', true, 5000 + 59 * 60000).hours.length, 3, 'a reading under an hour old shows the next hours');
+eq(w.weatherView(withHours, 'c', false, '', true, 5000 + 61 * 60000).hours.length, 0, 'an older reading does not (they would be hours already gone)');
 process.exit(fail ? 1 : 0);

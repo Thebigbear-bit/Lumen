@@ -28,6 +28,7 @@ import {applyHomeHook, getHookStatus, hookMessage, installHomeHook, logLine, mar
 import {getTakeoverStatus, installTakeover, reapplyTakeover, removeTakeover, stockTakeover, takeoverMessage} from './lib/takeover';
 import {applyPref, COLOR_KEY_ROWS, disabledReason, findPref, nextKeyApp, optionsFor, resetLook, type Press, type SystemInfo} from './lib/prefs';
 import {getRemoteState, setRemote, type RemoteState} from './lib/inputhook';
+import {readLastOpened, writeLastOpened} from './lib/lastopened';
 import {loadConfig, saveConfig, toggleId, DEFAULT_WALLPAPER, type UserConfig} from './lib/storage';
 import {applyTheme, colorsFor} from './theme/tokens';
 import {setRootVars} from './lib/cssvars';
@@ -59,13 +60,6 @@ const MISC_TILES: TileModel[] = [
 	{key: MISC.settings, label: 'Lumen Settings', glyph: 'gear'}
 ];
 
-const LAST_OPENED_KEY = 'customlauncher-last-opened';
-function readLastOpened (): string | null {
-	try { return localStorage.getItem(LAST_OPENED_KEY); } catch { return null; }
-}
-function writeLastOpened (key: string): void {
-	try { localStorage.setItem(LAST_OPENED_KEY, key); } catch { /* storage full or blocked: only this convenience is lost */ }
-}
 
 export function App () {
 	const [screen, setScreen] = useState<Screen>('home');
@@ -88,7 +82,6 @@ export function App () {
 	const closeRecents = useCallback(() => setRecents(false), []);
 	const [menu, setMenu] = useState<{key: string; title: string; app: AppEntry | null} | null>(null);   // the tile whose Move / Hide / Uninstall menu is open
 	const [focus, setFocus] = useState<{key: string; seq: number} | undefined>(undefined);               // asks Home to follow a moved tile
-	const lastOpened = useRef<string | null>(readLastOpened());          // the app or input opened last (Look → When Home is pressed)
 	const remoteWrite = useRef(0);                                       // pending write of the remote buttons (Options)
 	const replaceRef = useRef(config.replaceHome || config.takeoverHome);
 	const [allInputs, setInputs] = useState<InputSource[]>([]);
@@ -534,12 +527,8 @@ export function App () {
 	const storeKey: 'sourceEdits' | 'appEdits' = editedSource ? 'sourceEdits' : 'appEdits';
 	const changeEdit = (patch: SourceEdit) => setConfig((c) => { const next = {...c, [storeKey]: setEdit(c[storeKey], editedKey, patch)}; saveConfig(next); return next; });
 
-	// Home pressed: with "the app opened last" chosen, the highlight goes to it (Home itself starts at the first tile).
-	useEffect(() => {
-		if (config.homeFocus !== 'last' || !lastOpened.current) return;
-		const key = lastOpened.current;
-		setFocus((f) => ({key, seq: (f ? f.seq : 0) + 1}));
-	}, [wakes]);
+	// Home pressed: with "the app opened last" chosen (the default), Home puts the highlight straight on it.
+	const wakeKey = useMemo(() => (config.homeReturn === 'last' ? readLastOpened() : null), [wakes, config.homeReturn]);
 
 	const appearance: Appearance = useMemo(
 		() => ({iconScale: config.iconScale, iconOpacity: config.iconOpacity, labelColor: config.labelColor, iconGap: config.iconGap, tileShape: config.tileShape, quietSec: config.quietSec, oledShift: config.oledShift, sideMargin: config.sideMargin, bottomMargin: config.bottomMargin, showLabels: config.showLabels, rows: config.rows, clock: config.clock, clockCards: config.theme === 'glass'}),
@@ -569,7 +558,6 @@ export function App () {
 		// With the helper on: say the launcher is alive and note what is being opened, so the helper's check
 		// can never mistake this moment for a failure, and its log shows what happened if an app does not open.
 		if (config.replaceHome) markAliveSoon(`launcher: opening ${item.key}`, false);
-		lastOpened.current = item.key;
 		writeLastOpened(item.key);
 		launchApp(item.key).catch(() => {
 			if (config.replaceHome) logLine(`launcher: the TV refused to open ${item.key}`);
@@ -784,7 +772,7 @@ export function App () {
 			{wallpaperOn && natureShow && <PhotoShow intervalSec={config.wallpaper.intervalSec} shuffle={config.wallpaper.shuffle} paused={asleep} />}
 			{wallpaperOn && !natureShow && <Wallpaper config={config.wallpaper} opacity={config.wallpaperOpacity} onProblem={(text) => showToast(text, 'error')} />}
 			{/* Home stays mounted under the other screens so it keeps its focus position. */}
-			<Home items={homeItems} timeFormat={timeFormat} appearance={appearance} active={screen === 'home' && !menu && !recents} paused={asleep} onActivate={onActivate} onLongPress={onLongPress} onBack={openRecents} wake={wakes} focus={focus} weather={weatherLine} />
+			<Home items={homeItems} timeFormat={timeFormat} appearance={appearance} active={screen === 'home' && !menu && !recents} paused={asleep} onActivate={onActivate} onLongPress={onLongPress} onBack={openRecents} wake={wakes} wakeKey={wakeKey} focus={focus} weather={weatherLine} />
 			{recents && screen === 'home' && <Recents icons={recentIcons} width={config.recentsW} height={config.recentsH} onClose={closeRecents} onToast={showToast} />}
 			{menu && <AppMenu title={menu.title} moves={menuMoves} hideDetail={menu.app ? 'You can add it back in Settings → Apps' : 'You can add it back in Settings → Sources'} showUninstall={!!menu.app} blockedReason={menuBlocked} onMove={(action) => moveTile(menu.key, action)} onHide={() => hideTile(menu)} onUninstall={() => { if (menu.app) removeApp(menu.app); }} onClose={() => setMenu(null)} />}
 			{/* Settings stays mounted under the picker so it keeps its tab. */}

@@ -56,6 +56,8 @@ interface Props {
 	wake?: number;
 	/** put the highlight on the tile with this key (after it was moved); `seq` changes for each request */
 	focus?: {key: string; seq: number};
+	/** the tile to highlight when Home is pressed (the app opened last); the first tile when absent or gone */
+	wakeKey?: string | null;
 	/** the weather line under the date, when it is on and known */
 	weather?: WeatherView | null;
 }
@@ -76,7 +78,7 @@ function useShift (on: boolean): {x: number; y: number} | null {
 /** The home screen: a clock and the tiles along the bottom, in one row or two.
  *  Left/Right move along a row, Up/Down change row (two rows), OK opens, holding OK opens the app's menu.
  *  Back opens the Recent apps panel. */
-export function Home ({items, timeFormat, appearance, active, paused, onActivate, onLongPress, onBack, wake, focus, weather}: Props) {
+export function Home ({items, timeFormat, appearance, active, paused, onActivate, onLongPress, onBack, wake, wakeKey, focus, weather}: Props) {
 	const now = useClock(paused);
 	const [position, setPosition] = useState<RowsPosition>(initialPosition);
 	const sizes = splitRows(items.length, appearance.rows);
@@ -120,8 +122,15 @@ export function Home ({items, timeFormat, appearance, active, paused, onActivate
 		};
 	}, [appearance.quietSec, active, paused, wake]);
 
-	// Home pressed (the launcher comes to the front): start again at the first tile.
-	useEffect(() => { setPosition(initialPosition()); }, [wake]);
+	// Home pressed (the launcher comes to the front): the highlight goes to the app opened last (when chosen and still
+	// on the row), else to the first tile. Set in one step, so the highlight never visits the first tile on the way.
+	useEffect(() => {
+		const index = wakeKey ? items.findIndex((item) => item.key === wakeKey) : -1;
+		if (index === -1) { setPosition(initialPosition()); return; }
+		let row = 0;
+		while (row < sizes.length - 1 && index >= offsets[row] + sizes[row]) row++;
+		setPosition({row, cols: [0, 0].map((_, r) => (r === row ? index - offsets[row] : 0))});
+	}, [wake, wakeKey]);
 
 	// A tile was moved: the highlight follows it to its new place.
 	useEffect(() => {

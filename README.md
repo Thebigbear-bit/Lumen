@@ -13,10 +13,12 @@ It is a normal webOS app (app ID `com.thebigbear.lumen`). On a rooted TV it can 
 
 | | |
 |---|---|
-| ![Sunset wallpaper](docs/screenshots/home-sunset.jpg) | ![Ocean wallpaper, centred clock](docs/screenshots/home-ocean.jpg) |
-| ![A different clock font](docs/screenshots/home-aurora.jpg) | ![Hold OK on an app for its menu](docs/screenshots/app-menu.jpg) |
-| ![Home with the weather line](docs/screenshots/home-weather.jpg) | ![Quiet mode: only the clock stays](docs/screenshots/quiet-mode.jpg) |
-| ![Back opens the Recent apps panel](docs/screenshots/recents.jpg) | ![Settings, Options tab](docs/screenshots/settings-options.jpg) |
+| ![Glass theme with the Horizon picture, cards in the corner](docs/screenshots/lumen-glass.jpg) | ![Glass colour Sunset, cards in the middle](docs/screenshots/lumen-sunset.jpg) |
+| ![The Continue strip: Up on the app row reaches the apps opened last](docs/screenshots/lumen-continue.jpg) | ![Night mode over the Dunes picture](docs/screenshots/lumen-night.jpg) |
+| ![OLED black theme with a different clock font and the weather line](docs/screenshots/lumen-black.jpg) | ![Hold OK on an app for its menu](docs/screenshots/lumen-app-menu.jpg) |
+| ![Settings, Look tab](docs/screenshots/lumen-settings-look.jpg) | ![Settings, Apps tab](docs/screenshots/lumen-settings-apps.jpg) |
+
+*Screenshots of the real build at TV resolution (1920×1080), with sample apps and weather.*
 
 ## What's new in Lumen
 
@@ -49,8 +51,6 @@ Lumen is based on [Hearth](https://github.com/rudra-avatar/Hearth) 1.2.0 and add
 - **Wallpaper.** Plain black (or a calm blue-grey), one picture, or a slideshow of a whole folder from a USB drive or the TV's storage, or the bundled nature photos, with shuffle and an interval from 10 seconds to 1 hour.
 - **Start the TV straight into Lumen.** *Options → Add the launcher as a TV input* adds **Lumen** to the TV's input list, next to HDMI 1 and Live TV. Choose it, set the TV to start on its last input,
   and the TV boots into Lumen.
-
-  ![Lumen in the TV's input list](docs/screenshots/tv-input.jpg)
 - **The Home button opens Lumen** (instead of LG Home), with a helper script or the SAM method (see *Replacing LG Home*), and a switch for LG's own **"Show LG logo when the TV starts"**
   setting (normally hidden in a secret menu) for a clean start.
 - **Made to be fast.** The home screen is drawn from saved data first; everything else (app list, weather, helper checks) happens a few seconds later in the background.
@@ -145,7 +145,7 @@ from the Homebrew Channel or Dev Manager.
 
 ### Wallpaper
 
-![The wallpaper picker](docs/screenshots/wallpaper-picker.jpg)
+![The wallpaper picker](docs/screenshots/lumen-wallpaper-picker.jpg)
 
 **Settings → Wallpaper → Wallpaper** opens a folder browser: **Default background**, or a **USB drive** / **Internal storage** (`/media/developer`), where OK on a picture sets it and
 **Play this folder as a slideshow** plays every picture in the folder. Use JPG, PNG, WebP or BMP. A web app cannot read files itself, so on a rooted TV the Homebrew Channel's service reads them in small pieces.

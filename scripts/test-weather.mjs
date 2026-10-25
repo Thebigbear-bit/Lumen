@@ -30,6 +30,7 @@ eq(w.describe(73, true).icon, 'snow', 'snow');
 const v = w.weatherView(d, 'c', true, 'Pune');
 eq([v.main.indexOf('29°') === 0, v.range, v.city], [true, 'H 31°  L 25°', 'Pune'], 'the clock line');
 eq(w.weatherView(d, 'c', false, '').range, '', 'range can be hidden');
+eq([v.temp, v.main === v.temp + ' ' + v.text, v.text.length > 0], ['29°', true, true], 'temperature and conditions are also given apart, for the weather card');
 
 eq(w.isFresh(d, 12.97, 77.59, 1000 + 60000), true, 'a minute old is fresh');
 eq(w.isFresh(d, 12.97, 77.59, 1000 + w.FRESH_MS + 1), false, 'older than 30 minutes is not fresh');

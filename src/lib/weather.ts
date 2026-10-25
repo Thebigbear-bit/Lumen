@@ -123,6 +123,9 @@ export interface WeatherView {
 	icon: WeatherIcon;
 	/** "29° Partly cloudy" */
 	main: string;
+	/** "29°" and "Partly cloudy" on their own (the Glass theme's weather card shows them apart) */
+	temp: string;
+	text: string;
 	/** "H 31° L 25°", or empty */
 	range: string;
 	city: string;
@@ -132,7 +135,8 @@ export interface WeatherView {
 export function weatherView (data: WeatherData, unit: TempUnit, showRange: boolean, cityName: string): WeatherView {
 	const d = describe(data.code, data.isDay);
 	const range = showRange && data.highC !== null && data.lowC !== null ? 'H ' + formatTemp(data.highC, unit) + '  L ' + formatTemp(data.lowC, unit) : '';
-	return {icon: d.icon, main: formatTemp(data.tempC, unit) + ' ' + d.text, range, city: cityName};
+	const temp = formatTemp(data.tempC, unit);
+	return {icon: d.icon, main: temp + ' ' + d.text, temp, text: d.text, range, city: cityName};
 }
 
 export function isFresh (data: WeatherData | null, lat: number, lon: number, now: number): boolean {

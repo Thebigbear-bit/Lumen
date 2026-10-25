@@ -110,12 +110,12 @@ export function intervalText (seconds: number): string {
 	return seconds === 3600 ? '1 hour' : `${seconds / 3600} hours`;
 }
 
-const THEMES: readonly ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist'];
+const THEMES: readonly ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist', 'glass'];
 const CLOCK_FORMATS: readonly ClockFormat[] = ['12h', '24h', 'tv'];
 const WEIGHTS: readonly ClockWeight[] = [200, 300, 400, 500, 600, 700];
 const UNITS: readonly TempUnit[] = ['c', 'f'];
 
-const THEME_TEXT: Record<ThemeName, string> = {black: 'OLED black', grey: 'Calm blue-grey', midnight: 'Midnight blue', forest: 'Deep forest', cloud: 'Light: cloud', sand: 'Light: sand', mist: 'Light: mist'};
+const THEME_TEXT: Record<ThemeName, string> = {black: 'OLED black', grey: 'Calm blue-grey', midnight: 'Midnight blue', forest: 'Deep forest', cloud: 'Light: cloud', sand: 'Light: sand', mist: 'Light: mist', glass: 'Glass (Apple TV style)'};
 const FORMAT_TEXT: Record<ClockFormat, string> = {'12h': '12-hour (AM/PM)', '24h': '24-hour', tv: 'Same as the TV'};
 const WEIGHT_TEXT: Record<ClockWeight, string> = {200: 'Thin', 300: 'Light', 400: 'Regular', 500: 'Medium', 600: 'Semi-bold', 700: 'Bold'};
 
@@ -165,7 +165,7 @@ const WEATHER_PREFS: Pref[] = [
 
 const BASE_PREFS: Pref[] = [
 	// ----- Look -----
-	choice('theme', 'look', 'Theme', 'Colours of the tiles, text and background. OLED black keeps unused pixels off. On the light themes a white clock turns dark grey so it can be read (change it under Wallpaper).',
+	choice('theme', 'look', 'Theme', 'Colours of the tiles, text and background. OLED black keeps unused pixels off. Glass has frosted panels and tiles that lift when selected, like Apple TV. On the light themes a white clock turns dark grey so it can be read (change it under Wallpaper).',
 		THEMES, (c) => c.theme, (c, v) => ({...c, theme: v, clock: {...c.clock, color: LIGHT_THEMES.indexOf(v) !== -1 && c.clock.color === 'white' ? 'charcoal' : LIGHT_THEMES.indexOf(c.theme) !== -1 && LIGHT_THEMES.indexOf(v) === -1 && c.clock.color === 'charcoal' ? 'white' : c.clock.color}}), (v) => THEME_TEXT[v]),
 	choice('quietSec', 'look', 'Quiet mode', 'Hides the apps (the clock stays) when no key is pressed for this long. Any key brings them back; that first key does nothing else. ← → or OK change it.',
 		rangeValues('quietSec'), (c) => c.quietSec, (c, v) => ({...c, quietSec: v}), (v) => (v === 0 ? 'Off' : `${v} seconds`)),
@@ -222,6 +222,8 @@ const BASE_PREFS: Pref[] = [
 		(c) => c.clock.showDate, (c, v) => ({...c, clock: {...c.clock, showDate: v}})),
 	toggle('showPeriod', 'clock', 'Show AM / PM', 'The small AM or PM beside the time (12-hour only).',
 		(c) => c.clock.showPeriod, (c, v) => ({...c, clock: {...c.clock, showPeriod: v}})),
+	toggle('clockCorner', 'clock', 'In the top-left corner (Glass theme)', 'The clock and weather cards in the top-left corner. Clock size sets their size, as in the centre (they shrink by themselves if they would reach the apps). The position settings are not used.',
+		(c) => c.clock.corner, (c, v) => ({...c, clock: {...c.clock, corner: v}})),
 
 	// ----- Wallpaper -----
 	{

@@ -4,7 +4,7 @@
 
 import {setRootVars} from '../lib/cssvars';
 
-export type ThemeName = 'black' | 'grey' | 'midnight' | 'forest' | 'cloud' | 'sand' | 'mist';
+export type ThemeName = 'black' | 'grey' | 'midnight' | 'forest' | 'cloud' | 'sand' | 'mist' | 'glass';
 
 export interface Colors {
 	bg: string; wallpaperStart: string; wallpaperMid: string; wallpaperEnd: string;
@@ -116,6 +116,19 @@ function light (bg: string, w: [string, string, string], tile: string, edge: str
 
 const SOFT_INK: [string, string, string] = ['#F2F5F8', '#B9C6D3', '#7F90A1'];
 
+/** Glass, in the style of the Apple TV home screen: translucent tiles and frosted panels over a deep blue-violet
+ *  background. The shapes, blur and motion that go with it are in global.css under :root[data-theme="glass"]. */
+const GLASS: Colors = {
+	bg: '#0b0d1c', wallpaperStart: '#2a2f6b', wallpaperMid: '#1a1d45', wallpaperEnd: '#07080f',
+	textPrimary: '#FFFFFF', textSecondary: 'rgba(255, 255, 255, 0.72)', textMuted: 'rgba(255, 255, 255, 0.45)',
+	tileBg: 'rgba(255, 255, 255, 0.10)', tileBgFocus: 'rgba(255, 255, 255, 0.18)', tileBorder: 'rgba(255, 255, 255, 0.0)', tileBorderFocus: '#FFFFFF',
+	badge: '#FFFFFF', badgeText: '#0b0d1c', liftShadow: 'rgba(0, 0, 0, 0.55)',
+	buttonBorder: 'rgba(255, 255, 255, 0.22)', buttonActiveBg: '#FFFFFF', buttonActiveText: '#0b0d1c',
+	switchTrack: 'rgba(255, 255, 255, 0.22)', switchTrackOn: '#34C759', switchKnob: '#FFFFFF', switchKnobOn: '#FFFFFF',
+	danger: '#FF6B61', overlay: 'rgba(12, 14, 30, 0.45)', pickerBg: 'rgba(16, 18, 36, 0.92)',
+	scrim: '0, 0, 0', scrimTop: '0.22', scrimMid: '0.08', scrimBottom: '0.5'
+};
+
 export const THEMES: Record<ThemeName, Colors> = {
 	black: BLACK,
 	grey: GREY,
@@ -123,7 +136,8 @@ export const THEMES: Record<ThemeName, Colors> = {
 	forest: dark('#0b1a12', ['#12281b', '#1d4030', '#0b1a12'], '#12231a', '#1b3326', '#2d4a3a', ['#F1F6F2', '#B7C9BC', '#7C927F']),
 	cloud: light('#B4C0CE', ['#C6D0DC', '#AEBBCA', '#93A5B8'], '#D6DEE6', '#9AA9BA', '#E8EEF3', '#8895A4'),
 	sand: light('#CFC0A8', ['#DCCFB9', '#CBBB9F', '#B4A183'], '#E6DBC8', '#B2A183', '#F2EADC', '#A29478'),
-	mist: light('#AFC4C9', ['#C2D4D8', '#A8C0C6', '#8BA8B0'], '#D3E1E4', '#94ADB3', '#E6EFF1', '#82999F')
+	mist: light('#AFC4C9', ['#C2D4D8', '#A8C0C6', '#8BA8B0'], '#D3E1E4', '#94ADB3', '#E6EFF1', '#82999F'),
+	glass: GLASS
 };
 
 /** The themes with dark text (the clock turns dark grey on them, see prefs). */
@@ -170,6 +184,7 @@ function scrimDisplay (c: {scrimTop: string; scrimMid: string; scrimBottom: stri
 
 /** Writes every token onto :root as --color-*, --font-*, --layout-*, --motion-*. */
 export function applyTokens (theme: ThemeName = 'black'): void {
+	document.documentElement.setAttribute('data-theme', theme);     // global.css changes shapes and motion per theme (glass)
 	const groups: Record<string, object> = {color: THEMES[theme], font: FONT, layout: LAYOUT, motion: MOTION};
 	const vars: Record<string, string> = {};
 	for (const group in groups) {
@@ -186,6 +201,7 @@ export function applyTokens (theme: ThemeName = 'black'): void {
 
 /** Switch the colour theme at runtime. */
 export function applyTheme (theme: ThemeName): void {
+	document.documentElement.setAttribute('data-theme', theme);
 	const colors = THEMES[theme] as unknown as Record<string, string>;
 	const vars: Record<string, string> = {};
 	for (const key in colors) vars[`--color-${kebab(key)}`] = colors[key];

@@ -43,3 +43,35 @@ export function timeParts (date: Date, format: TimeFormat): TimeParts {
 function pad (n: number): string {
 	return n < 10 ? `0${n}` : String(n);
 }
+
+/** How far (px) to move the clock up so its bottom stays `gap` above `limit` (the top of the app row), without
+ *  moving its top above `minTop`. `top` and `bottom` are where it is drawn when not moved. 0 when it already fits. */
+export function liftToClear (top: number, bottom: number, limit: number, gap: number, minTop: number): number {
+	const needed = bottom + gap - limit;
+	if (needed <= 0) return 0;
+	return Math.max(0, Math.min(needed, top - minTop));
+}
+
+export interface CardFit {
+	/** px to move the cards up (centred layout) */
+	lift: number;
+	/** the weather card keeps its own height instead of matching the clock card */
+	compact: boolean;
+	/** 1, or less when the cards must shrink to fit (corner layout) */
+	scale: number;
+}
+
+/** Fits the Glass cards above the app row. `top` is where the cards start, `height` and `compactHeight` their
+ *  height with two equal cards and with the weather card at its own height, and `limit` the top of the app row.
+ *  Centred cards may move up (not above `minTop`); cards in the corner stay where they are and shrink instead. */
+export function fitCards (corner: boolean, top: number, height: number, compactHeight: number, limit: number, gap: number, minTop: number): CardFit {
+	const room = limit - gap;
+	if (corner) {
+		if (top + height <= room) return {lift: 0, compact: false, scale: 1};
+		if (top + compactHeight <= room) return {lift: 0, compact: true, scale: 1};
+		return {lift: 0, compact: true, scale: Math.max(0.4, Math.floor((room - top) / compactHeight * 100) / 100)};
+	}
+	const lift = liftToClear(top, top + height, limit, gap, minTop);
+	if (top - lift + height <= room) return {lift, compact: false, scale: 1};
+	return {lift: liftToClear(top, top + compactHeight, limit, gap, minTop), compact: true, scale: 1};
+}

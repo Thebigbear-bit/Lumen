@@ -521,8 +521,8 @@ export function App () {
 	const changeEdit = (patch: SourceEdit) => setConfig((c) => { const next = {...c, [storeKey]: setEdit(c[storeKey], editedKey, patch)}; saveConfig(next); return next; });
 
 	const appearance: Appearance = useMemo(
-		() => ({iconScale: config.iconScale, iconOpacity: config.iconOpacity, labelColor: config.labelColor, iconGap: config.iconGap, tileShape: config.tileShape, quietSec: config.quietSec, oledShift: config.oledShift, sideMargin: config.sideMargin, bottomMargin: config.bottomMargin, showLabels: config.showLabels, rows: config.rows, clock: config.clock}),
-		[config.iconScale, config.iconOpacity, config.labelColor, config.iconGap, config.tileShape, config.quietSec, config.oledShift, config.sideMargin, config.bottomMargin, config.showLabels, config.rows, config.clock]
+		() => ({iconScale: config.iconScale, iconOpacity: config.iconOpacity, labelColor: config.labelColor, iconGap: config.iconGap, tileShape: config.tileShape, quietSec: config.quietSec, oledShift: config.oledShift, sideMargin: config.sideMargin, bottomMargin: config.bottomMargin, showLabels: config.showLabels, rows: config.rows, clock: config.clock, clockCards: config.theme === 'glass'}),
+		[config.iconScale, config.iconOpacity, config.labelColor, config.iconGap, config.tileShape, config.quietSec, config.oledShift, config.sideMargin, config.bottomMargin, config.showLabels, config.rows, config.clock, config.theme]
 	);
 
 	// ----- actions -----

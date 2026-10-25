@@ -22,7 +22,7 @@ export const RANGES = {
 	iconScale:    {min: 50,  max: 140, step: 10, def: 90},   // % of the standard tile size
 	sideMargin:   {min: 0,   max: 300, step: 10, def: 20},    // px at 1080p, left and right of the app row
 	bottomMargin: {min: 0,   max: 200, step: 10, def: 10},    // px at 1080p, below the app row
-	clockSize:    {min: 80,  max: 220, step: 10, def: 140},   // px, height of the digits
+	clockSize:    {min: 60,  max: 220, step: 10, def: 140},   // px, height of the digits
 	clockTop:     {min: 0,   max: 70,  step: 2,  def: 28},    // % of the screen height (0 = the very top)
 	clockLeft:    {min: 0,   max: 100, step: 2,  def: 50},    // % of the screen width (where the clock's centre sits)
 	clockShadow: {min: 10,  max: 100, step: 10, def: 50},     // % (strength of the widget's drop shadow)
@@ -65,6 +65,8 @@ export interface ClockConfig {
 	showDate: boolean;
 	/** AM/PM beside the time (12-hour mode only) */
 	showPeriod: boolean;
+	/** Glass theme: the clock and weather cards small, in the top-left corner (instead of where top/left put them) */
+	corner: boolean;
 }
 
 export interface WeatherConfig {
@@ -155,7 +157,7 @@ export interface UserConfig {
 	wallpaper: WallpaperConfig;
 }
 
-export const THEME_IDS: ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist'];
+export const THEME_IDS: ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist', 'glass'];
 
 export const DEFAULT_WALLPAPER: WallpaperConfig = {
 	mode: 'gradient',
@@ -183,7 +185,8 @@ export const DEFAULT_CLOCK: ClockConfig = {
 	shadowStrength: RANGES.clockShadow.def,
 	opacity: RANGES.clockOpacity.def,
 	showDate: true,
-	showPeriod: true
+	showPeriod: true,
+	corner: false
 };
 
 export const DEFAULT_CONFIG: UserConfig = {
@@ -296,7 +299,8 @@ export function loadConfig (): UserConfig {
 				shadowStrength: ranged(c.shadowStrength, 'clockShadow'),
 				opacity: ranged(c.opacity, 'clockOpacity'),
 				showDate: c.showDate !== false,
-				showPeriod: c.showPeriod !== false
+				showPeriod: c.showPeriod !== false,
+				corner: c.corner === true
 			},
 			weather: {
 				on: wx.on === true && city !== null,

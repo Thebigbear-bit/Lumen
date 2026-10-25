@@ -27,6 +27,9 @@ export interface WeatherData {
 	at: number;
 	/** the next few hours (absent in readings saved by older versions) */
 	hours?: HourData[];
+	/** today's sunrise and sunset, minutes after midnight in the place's own time (for night mode; absent when unknown) */
+	sunrise?: number | null;
+	sunset?: number | null;
 }
 
 export interface HourData {
@@ -57,7 +60,7 @@ export function validCoords (lat: unknown, lon: unknown): boolean {
 export function forecastUrl (lat: number, lon: number): string {
 	return 'https://api.open-meteo.com/v1/forecast?latitude=' + coord(lat) + '&longitude=' + coord(lon)
 		+ '&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&forecast_hours=6'
-		+ '&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto';
+		+ '&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=1&timezone=auto';
 }
 
 export function geocodeUrl (query: string): string {
@@ -74,10 +77,17 @@ export function parseWeather (json: string, lat: number, lon: number, now: numbe
 		if (temp === null || code === null) return null;
 		const daily = data.daily || {};
 		const first = (list: unknown): number | null => (Array.isArray(list) ? num(list[0]) : null);
-		return {lat, lon, tempC: temp, highC: first(daily.temperature_2m_max), lowC: first(daily.temperature_2m_min), code, isDay: current.is_day !== 0, at: now, hours: parseHours(data.hourly, typeof current.time === 'string' ? current.time : '')};
+		return {lat, lon, tempC: temp, highC: first(daily.temperature_2m_max), lowC: first(daily.temperature_2m_min), code, isDay: current.is_day !== 0, at: now, hours: parseHours(data.hourly, typeof current.time === 'string' ? current.time : ''),
+			sunrise: minutesOf(Array.isArray(daily.sunrise) ? daily.sunrise[0] : null), sunset: minutesOf(Array.isArray(daily.sunset) ? daily.sunset[0] : null)};
 	} catch {
 		return null;
 	}
+}
+
+/** "2026-10-26T06:45" as minutes after midnight (405); null when it is not such a time. */
+export function minutesOf (time: unknown): number | null {
+	const m = typeof time === 'string' ? /T(\d{2}):(\d{2})/.exec(time) : null;
+	return m ? Number(m[1]) * 60 + Number(m[2]) : null;
 }
 
 /** The next three hours after `currentTime` (Open-Meteo's "2026-10-26T02:15", the place's own time; the hourly list
@@ -175,7 +185,10 @@ export function weatherView (data: WeatherData, unit: TempUnit, showRange: boole
 	const range = showRange && data.highC !== null && data.lowC !== null ? 'H ' + formatTemp(data.highC, unit) + '  L ' + formatTemp(data.lowC, unit) : '';
 	const temp = formatTemp(data.tempC, unit);
 	// the next hours only from a reading under an hour old (an older one would list hours already gone)
-	const hours = showHours && data.hours && now - data.at < 3600000 ? data.hours.map((h) => ({hour: h.hour, temp: formatTemp(h.tempC, unit), icon: describe(h.code, h.isDay).icon})) : [];
+	// and only hours still to come: 1 to 12 hours after the current one (a reading from late in the last hour can still
+	// list the hour that has now begun)
+	const hourNow = new Date(now).getHours();
+	const hours = showHours && data.hours && now - data.at < 3600000 ? data.hours.filter((h) => { const ahead = (h.hour - hourNow + 24) % 24; return ahead >= 1 && ahead <= 12; }).map((h) => ({hour: h.hour, temp: formatTemp(h.tempC, unit), icon: describe(h.code, h.isDay).icon})) : [];
 	return {icon: d.icon, main: temp + ' ' + d.text, temp, text: d.text, range, city: cityName, hours};
 }
 
@@ -186,6 +199,11 @@ export function isFresh (data: WeatherData | null, lat: number, lon: number, now
 /** The saved reading, if it is for this place and not too old. */
 export function usableCached (data: WeatherData | null, lat: number, lon: number, now: number): WeatherData | null {
 	return data && data.lat === lat && data.lon === lon && now - data.at < SHOWN_MS && now >= data.at ? data : null;
+}
+
+function dayMinute (v: unknown): number | null {
+	const n = num(v);
+	return n !== null && n >= 0 && n < 1440 ? n : null;
 }
 
 /** The next hours as saved (kept so they show at start-up too, before the next reading). */
@@ -201,7 +219,7 @@ export function readWeatherCache (): WeatherData | null {
 		if (!raw) return null;
 		const d = JSON.parse(raw);
 		if (!validCoords(d.lat, d.lon) || num(d.tempC) === null || num(d.code) === null || num(d.at) === null) return null;
-		return {lat: d.lat, lon: d.lon, tempC: d.tempC, highC: num(d.highC), lowC: num(d.lowC), code: d.code, isDay: d.isDay !== false, at: d.at, hours: savedHours(d.hours)};
+		return {lat: d.lat, lon: d.lon, tempC: d.tempC, highC: num(d.highC), lowC: num(d.lowC), code: d.code, isDay: d.isDay !== false, at: d.at, hours: savedHours(d.hours), sunrise: dayMinute(d.sunrise), sunset: dayMinute(d.sunset)};
 	} catch {
 		return null;
 	}

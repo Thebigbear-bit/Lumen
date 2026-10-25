@@ -28,7 +28,7 @@ import {applyHomeHook, getHookStatus, hookMessage, installHomeHook, logLine, mar
 import {getTakeoverStatus, installTakeover, reapplyTakeover, removeTakeover, stockTakeover, takeoverMessage} from './lib/takeover';
 import {applyPref, COLOR_KEY_ROWS, disabledReason, findPref, nextKeyApp, optionsFor, resetLook, type Press, type SystemInfo} from './lib/prefs';
 import {getRemoteState, setRemote, type RemoteState} from './lib/inputhook';
-import {readLastOpened, writeLastOpened} from './lib/lastopened';
+import {readLastOpened, readOpenedHistory, writeLastOpened} from './lib/lastopened';
 import {loadConfig, saveConfig, toggleId, DEFAULT_WALLPAPER, type UserConfig} from './lib/storage';
 import {applyTheme, colorsFor} from './theme/tokens';
 import {setRootVars} from './lib/cssvars';
@@ -45,7 +45,10 @@ import {moveKey, movesFor, orderTiles, orderUpdate, reslot, type MoveAction} fro
 import {APP_ID, TIMING, WALLPAPER} from './config/constants';
 import {PROBE_ENABLED, WEATHER_ENABLED} from './config/features';
 import {PROBE_TESTS, RUN_ALL_ID, bad as probeBad, probeOptions, runAll, withLimit, type ProbeState} from './lib/probe';
-import {fetchWeather} from './lib/weathernet';
+import {fetchWeather, searchCities} from './lib/weathernet';
+import {pickCity, readTvPlace} from './lib/tvcity';
+import {checkForUpdate, installUpdate, markWhatsNewShown, pendingWhatsNew, openHomebrew, WHATS_NEW, type UpdateState} from './lib/update';
+import {DEFAULT_CITY} from './lib/cities';
 import {FRESH_MS, isFresh, readWeatherCache, usableCached, weatherView, writeWeatherCache, type City, type WeatherData} from './lib/weather';
 
 type Screen = 'home' | 'settings' | 'picker' | 'cities' | 'source' | 'iconpicker';
@@ -133,13 +136,59 @@ export function App () {
 
 	useEffect(() => { document.documentElement.classList.toggle('look-minimal', config.minimal); }, [config.minimal]);
 
+	// Weather city from the TV's own time zone setting, once, while the city is still the default (never over one the
+	// user chose). In the background, a while after start-up.
+	useEffect(() => {
+		if (!WEATHER_ENABLED || !isWebOS() || config.cityAutoDone) return undefined;
+		const current = config.weather.city;
+		const done = (patch: Partial<UserConfig['weather']> | null) => setConfig((c) => {
+			const next = {...c, cityAutoDone: true, weather: patch ? {...c.weather, ...patch} : c.weather};
+			saveConfig(next);
+			return next;
+		});
+		if (current && current.name !== DEFAULT_CITY.name) { done(null); return undefined; }
+		let live = true;
+		const timer = window.setTimeout(() => {
+			readTvPlace().then((place) => {
+				if (!live || !place) return undefined;
+				return searchCities(place.city, true).then((results) => {
+					const city = pickCity(results, place.country);
+					if (!live || !city) return;
+					log(`Weather city set from the TV's time zone: ${city.name}`);
+					done({city, on: true});
+				});
+			}).catch(() => undefined);
+		}, TIMING.backgroundWorkMs + 2000);
+		return () => { live = false; window.clearTimeout(timer); };
+	}, []);
+
 	useEffect(() => { log(`Lumen ${HEARTH_VERSION} started`); return startLogFile(TIMING.backgroundWorkMs + 1000); }, []);
 
-	const showToast = useCallback((text: string, kind: ToastMessage['kind'] = 'info') => {
+	const showToast = useCallback((text: string, kind: ToastMessage['kind'] = 'info', ms: number = TIMING.toastMs) => {
 		window.clearTimeout(toastTimer.current);
 		if (kind === 'error') log('Problem shown: ' + text);
 		setToast({text, kind});
-		toastTimer.current = window.setTimeout(() => setToast(null), TIMING.toastMs);
+		toastTimer.current = window.setTimeout(() => setToast(null), ms);
+	}, []);
+
+	// Just updated: say once what is new (a little after start-up, so the home screen is drawn first).
+	useEffect(() => {
+		const from = pendingWhatsNew();
+		if (!from) return undefined;
+		log(`Updated from ${from} to ${HEARTH_VERSION}`);
+		const timer = window.setTimeout(() => {
+			if (document.hidden) return;                 // not on screen: told next time instead
+			showToast(`Lumen ${HEARTH_VERSION}: ${WHATS_NEW}`, 'info', 9000);
+			markWhatsNewShown();
+		}, 2500);
+		return () => window.clearTimeout(timer);
+	}, []);
+
+	// Updates: checked when Settings opens (a check from the last 12 hours is reused).
+	const [update, setUpdate] = useState<UpdateState | null>(null);
+	const recheck = useCallback((force: boolean) => {
+		setUpdate({kind: 'checking'});
+		checkForUpdate(isWebOS(), force).then(setUpdate);
 	}, []);
 
 	// Start in remote (5-way) mode: hide the Magic Remote pointer whenever we come to the
@@ -280,6 +329,8 @@ export function App () {
 		const timer = window.setTimeout(() => setWallpaperOn(false), WALLPAPER.releaseAfterMs);
 		return () => window.clearTimeout(timer);
 	}, [asleep]);
+
+	useEffect(() => { if (settingsOpen && isWebOS()) recheck(false); }, [settingsOpen]);
 
 	// Inputs are only read when they're needed: some are on the home row, or Settings is open.
 	const needInputs = config.sourceIds.length > 0 || screen === 'settings';
@@ -516,10 +567,10 @@ export function App () {
 		{id: TAB.clock, label: 'Clock', noun: '', items: [], shown: [], options: optionsFor('clock', config)},
 		...(WEATHER_ENABLED ? [{id: TAB.weather, label: 'Weather', noun: '', items: [], shown: [], options: optionsFor('weather', config)}] : []),
 		{id: TAB.wallpaper, label: 'Wallpaper', noun: '', items: [], shown: [], options: optionsFor('wallpaper', config)},
-		{id: TAB.options, label: 'Options', noun: '', items: [], shown: [], options: optionsFor('options', config, {...systemInfo, tvInput, appTitles})},
+		{id: TAB.options, label: 'Options', noun: '', items: [], shown: [], options: optionsFor('options', config, {...systemInfo, tvInput, appTitles, update})},
 		...(config.showDebug ? [{id: TAB.debug, label: 'Debug', noun: '', items: [], shown: [], pages: debugPagesNow}] : []),
 		...(PROBE_ENABLED && config.showDebug ? [{id: TAB.tests, label: 'Tests', noun: '', items: [], shown: [], options: probeOptions(probe)}] : [])
-	], [apps, inputs, shownApps, shownInputs, config, systemInfo, tvInput, probe, debugPagesNow, appTitles]);
+	], [apps, inputs, shownApps, shownInputs, config, systemInfo, tvInput, probe, debugPagesNow, appTitles, update]);
 
 	const editedSource = editKey ? inputs.filter((i) => i.appId === editKey)[0] : undefined;
 	const editedApp = editKey && !editedSource ? apps.filter((a) => a.id === editKey)[0] : undefined;
@@ -529,10 +580,14 @@ export function App () {
 
 	// Home pressed: with "the app opened last" chosen (the default), Home puts the highlight straight on it.
 	const wakeKey = useMemo(() => (config.homeReturn === 'last' ? readLastOpened() : null), [wakes, config.homeReturn]);
+	const continueKeys = useMemo(() => readOpenedHistory(), [wakes]);
+	// night mode: today's sun times from the weather (only for the chosen city)
+	const sunrise = weather && wxCity && weather.sunrise !== undefined ? weather.sunrise : null;
+	const sunset = weather && wxCity && weather.sunset !== undefined ? weather.sunset : null;
 
 	const appearance: Appearance = useMemo(
-		() => ({iconScale: config.iconScale, iconOpacity: config.iconOpacity, labelColor: config.labelColor, iconGap: config.iconGap, tileShape: config.tileShape, quietSec: config.quietSec, oledShift: config.oledShift, sideMargin: config.sideMargin, bottomMargin: config.bottomMargin, showLabels: config.showLabels, rows: config.rows, clock: config.clock, clockCards: config.theme === 'glass'}),
-		[config.iconScale, config.iconOpacity, config.labelColor, config.iconGap, config.tileShape, config.quietSec, config.oledShift, config.sideMargin, config.bottomMargin, config.showLabels, config.rows, config.clock, config.theme]
+		() => ({iconScale: config.iconScale, iconOpacity: config.iconOpacity, labelColor: config.labelColor, iconGap: config.iconGap, tileShape: config.tileShape, quietSec: config.quietSec, oledShift: config.oledShift, sideMargin: config.sideMargin, bottomMargin: config.bottomMargin, showLabels: config.showLabels, rows: config.rows, clock: config.clock, clockCards: config.theme === 'glass', nightMode: config.nightMode, sunrise, sunset, showContinue: config.showContinue}),
+		[config.iconScale, config.iconOpacity, config.labelColor, config.iconGap, config.tileShape, config.quietSec, config.oledShift, config.sideMargin, config.bottomMargin, config.showLabels, config.rows, config.clock, config.theme, config.nightMode, sunrise, sunset, config.showContinue]
 	);
 
 	// ----- actions -----
@@ -667,6 +722,19 @@ export function App () {
 					}))
 					.catch((error) => showToast(failureText(error, 'change the TV input'), 'error'));
 			}
+			else if (optionId === 'update') {
+				if (update && update.kind === 'available') {
+					const release = update.release;
+					if (rootState() === 'yes') {
+						setUpdate({kind: 'installing', release});
+						showToast(`Updating to Lumen ${release.version}: it closes for a moment and opens again`, 'info', 9000);
+						installUpdate(release).catch(() => { setUpdate({kind: 'available', release}); showToast(`Couldn't start the update${whySuffix()}`, 'error'); });
+					} else {
+						showToast('Opening the Homebrew Channel: choose Lumen there to update');
+						openHomebrew().catch(() => showToast("Couldn't open the Homebrew Channel", 'error'));
+					}
+				} else if (!update || update.kind !== 'installing') recheck(true);
+			}
 			else if (optionId === 'homeButton' || COLOR_KEY_ROWS[optionId]) {
 				const remote = systemInfo.remote;
 				if (!remote) { showToast('Still reading the remote buttons, try again in a moment'); return; }
@@ -697,7 +765,7 @@ export function App () {
 		}
 		const next = applyPref(config, optionId, press);
 		if (next !== config) updateConfig(next);
-	}, [config, showToast, systemInfo, tvInput, apps]);
+	}, [config, showToast, systemInfo, tvInput, apps, update, recheck]);
 
 	const onRefresh = useCallback(() => {
 		manualLoad.current = true;
@@ -719,7 +787,7 @@ export function App () {
 	}, [config, showToast]);
 
 	const onChooseCity = useCallback((city: City) => {
-		updateConfig({...config, weather: {...config.weather, city, on: true}});
+		updateConfig({...config, cityAutoDone: true, weather: {...config.weather, city, on: true}});
 		setScreen('settings');
 		showToast(`Weather set to ${city.name}`);
 	}, [config, showToast]);
@@ -772,7 +840,7 @@ export function App () {
 			{wallpaperOn && natureShow && <PhotoShow intervalSec={config.wallpaper.intervalSec} shuffle={config.wallpaper.shuffle} paused={asleep} />}
 			{wallpaperOn && !natureShow && <Wallpaper config={config.wallpaper} opacity={config.wallpaperOpacity} onProblem={(text) => showToast(text, 'error')} />}
 			{/* Home stays mounted under the other screens so it keeps its focus position. */}
-			<Home items={homeItems} timeFormat={timeFormat} appearance={appearance} active={screen === 'home' && !menu && !recents} paused={asleep} onActivate={onActivate} onLongPress={onLongPress} onBack={openRecents} wake={wakes} wakeKey={wakeKey} focus={focus} weather={weatherLine} />
+			<Home items={homeItems} timeFormat={timeFormat} appearance={appearance} active={screen === 'home' && !menu && !recents} paused={asleep} onActivate={onActivate} onLongPress={onLongPress} onBack={openRecents} wake={wakes} wakeKey={wakeKey} continueKeys={continueKeys} focus={focus} weather={weatherLine} />
 			{recents && screen === 'home' && <Recents icons={recentIcons} width={config.recentsW} height={config.recentsH} onClose={closeRecents} onToast={showToast} />}
 			{menu && <AppMenu title={menu.title} moves={menuMoves} hideDetail={menu.app ? 'You can add it back in Settings → Apps' : 'You can add it back in Settings → Sources'} showUninstall={!!menu.app} blockedReason={menuBlocked} onMove={(action) => moveTile(menu.key, action)} onHide={() => hideTile(menu)} onUninstall={() => { if (menu.app) removeApp(menu.app); }} onClose={() => setMenu(null)} />}
 			{/* Settings stays mounted under the picker so it keeps its tab. */}

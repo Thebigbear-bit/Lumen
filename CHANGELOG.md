@@ -1,5 +1,14 @@
 # Changelog
 
+## Lumen 1.1.0
+
+- **Night mode** (Look): from sunset to sunrise (the times of your weather city), or 10 PM to 7 AM, the wallpaper is dimmed under a warm veil and the clock is softer. On by default (sunset to sunrise); Off is a choice.
+- **Continue strip** (Look): the last three apps you opened, small, under the clock and weather. Press **Up** on the app row to reach them, ← → to choose, OK to open, Down or Back to go back.
+- **Your city from the TV:** on a new install the weather city is taken from the TV's own time zone setting (for example Copenhagen), never over a city you chose. Only the city's name goes to the weather service.
+- **Lumen updates** (Options): Settings checks for a new version when it opens (at most every 12 hours). On a rooted TV, OK downloads it, checks its SHA-256, installs it and opens Lumen again (about 6 seconds); otherwise it opens the Homebrew Channel. Only downloads from Lumen's own GitHub releases are accepted.
+- **What's new:** after an update, a short message says what changed.
+- **Glass is the default theme** on new installs (and after *Reset look and clock*).
+
 ## Lumen 1.0.1
 
 - **When Home is pressed** now goes back to the app you opened last by default (also apps opened from the Recent apps panel), and the highlight goes straight there.

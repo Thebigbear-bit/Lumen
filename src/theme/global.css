@@ -931,3 +931,56 @@ html, body {
 [data-effects="reduced"][data-theme="glass"] .toast { background: rgba(28, 30, 50, 0.96); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
 [data-effects="reduced"] .option--focused,
 [data-effects="reduced"] .picker__row--focused { box-shadow: none; }
+
+/* ---- Continue strip (Settings → Look → Continue strip): the apps opened last, under the clock and weather.
+   Up on the app row moves the highlight here. Plain margins, not gap (older web views). ---- */
+.clock__continue {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	margin-top: 22px;
+	font-size: 20px;
+	color: #FFFFFF;
+	text-shadow: var(--clock-shadow);
+}
+.clock--cards .clock__continue { justify-content: flex-start; margin-top: 16px; }
+.clock__continue-title { margin-right: 16px; opacity: 0.65; letter-spacing: 0.04em; }
+.clock__continue-item { display: flex; flex-direction: row; align-items: center; margin-right: 14px; }
+.clock__continue-item:last-child { margin-right: 0; }
+.clock__continue-icon {
+	width: 56px; height: 56px;
+	border-radius: 14px;
+	overflow: hidden;
+	display: flex; align-items: center; justify-content: center;
+	background: rgba(255, 255, 255, 0.14);
+	opacity: 0.8;
+	transition: transform 160ms ease-out, opacity 160ms ease-out, box-shadow 160ms ease-out;
+}
+.clock__continue-icon img { width: 100%; height: 100%; object-fit: cover; }
+.clock__continue-icon span { font-size: 26px; font-weight: 600; }
+.clock__continue--active .clock__continue-icon { opacity: 0.6; }
+.clock__continue-item--focused .clock__continue-icon {
+	opacity: 1 !important;
+	transform: scale(1.18);
+	box-shadow: 0 0 0 3px #FFFFFF, 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+.clock__continue-label { margin-left: 18px; font-weight: 500; }
+
+/* ---- Night mode (Settings → Look): a warm, dark veil over the wallpaper and a softer clock. The veil is drawn under
+   the clock and the apps; only text is softened, so the Glass cards keep their blur. ---- */
+.screen--home:before {
+	content: '';
+	position: absolute;
+	left: 0; top: 0; right: 0; bottom: 0;
+	background: rgba(14, 8, 2, 0.42);
+	opacity: 0;
+	transition: opacity 2s ease-in-out;
+	pointer-events: none;
+}
+.screen--night:before { opacity: 1; }
+.screen--night .clock__time,
+.screen--night .clock__date,
+.screen--night .clock__weather,
+.screen--night .clock__card-inner,
+.screen--night .clock__continue { opacity: 0.8; }

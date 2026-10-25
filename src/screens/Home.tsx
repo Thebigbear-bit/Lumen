@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from 'preact/hooks';
+import {useCallback, useEffect, useRef, useState, useMemo} from 'preact/hooks';
 import {Clock} from '../components/Clock';
 import {Row} from '../components/Row';
 import type {TileModel} from '../components/Tile';
@@ -8,12 +8,19 @@ import {useClock} from '../hooks/useClock';
 import type {TimeFormat} from '../lib/clock';
 import {clampPosition, initialPosition, movePosition, rowOffsets, splitRows, type RowsPosition} from '../lib/rows';
 import {labelColorValue} from '../lib/clockcolor';
-import type {ClockConfig} from '../lib/storage';
+import type {ClockConfig, NightMode} from '../lib/storage';
+import {isNight} from '../lib/night';
 import type {WeatherView} from '../lib/weather';
 import {FONT, LAYOUT} from '../theme/tokens';
 import {varScope} from '../lib/cssvars';
 
 export interface Appearance {
+	/** night mode and today's sun times (minutes after midnight; null when unknown) */
+	nightMode: NightMode;
+	sunrise: number | null;
+	sunset: number | null;
+	/** the Continue strip under the clock */
+	showContinue: boolean;
 	/** icon size, % of the standard size */
 	iconScale: number;
 	/** icon opacity, % */
@@ -58,6 +65,8 @@ interface Props {
 	focus?: {key: string; seq: number};
 	/** the tile to highlight when Home is pressed (the app opened last); the first tile when absent or gone */
 	wakeKey?: string | null;
+	/** the apps and inputs opened last, newest first (keys), for the Continue strip */
+	continueKeys?: string[];
 	/** the weather line under the date, when it is on and known */
 	weather?: WeatherView | null;
 }
@@ -78,13 +87,26 @@ function useShift (on: boolean): {x: number; y: number} | null {
 /** The home screen: a clock and the tiles along the bottom, in one row or two.
  *  Left/Right move along a row, Up/Down change row (two rows), OK opens, holding OK opens the app's menu.
  *  Back opens the Recent apps panel. */
-export function Home ({items, timeFormat, appearance, active, paused, onActivate, onLongPress, onBack, wake, wakeKey, focus, weather}: Props) {
+export function Home ({items, timeFormat, appearance, active, paused, onActivate, onLongPress, onBack, wake, wakeKey, continueKeys, focus, weather}: Props) {
 	const now = useClock(paused);
 	const [position, setPosition] = useState<RowsPosition>(initialPosition);
 	const sizes = splitRows(items.length, appearance.rows);
 	const offsets = rowOffsets(sizes);
 	const at = clampPosition(sizes, position);
-	const selectedItem = items[offsets[at.row] + at.cols[at.row]];
+	// The Continue strip: up to three apps opened last that are still on the row. `strip` is the highlighted one
+	// (null while the highlight is on the row). Up on the top row moves into it; Down or Back go back.
+	const stripItems = useMemo(() => {
+		if (!appearance.showContinue || !continueKeys) return [] as TileModel[];
+		const out: TileModel[] = [];
+		continueKeys.forEach((k) => { const t = items.filter((i) => i.key === k)[0]; if (t && out.length < 3) out.push(t); });
+		return out;
+	}, [appearance.showContinue, continueKeys, items]);
+	const [strip, setStrip] = useState<number | null>(null);
+	const stripRef = useRef<number | null>(null);
+	stripRef.current = strip !== null && strip < stripItems.length ? strip : null;
+	const onStrip = stripRef.current !== null;
+	const selectedItem = onStrip ? stripItems[stripRef.current as number] : items[offsets[at.row] + at.cols[at.row]];
+	const night = isNight(now.getHours() * 60 + now.getMinutes(), appearance.nightMode, appearance.sunrise, appearance.sunset);
 	const sizeKey = sizes.join(',');
 	const quietRef = useRef(false);                       // true while the apps are hidden and for the key press that woke them
 	const [quiet, setQuiet] = useState(false);
@@ -126,6 +148,7 @@ export function Home ({items, timeFormat, appearance, active, paused, onActivate
 	// on the row), else to the first tile. Set in one step, so the highlight never visits the first tile on the way.
 	useEffect(() => {
 		const index = wakeKey ? items.findIndex((item) => item.key === wakeKey) : -1;
+		setStrip(null);
 		if (index === -1) { setPosition(initialPosition()); return; }
 		let row = 0;
 		while (row < sizes.length - 1 && index >= offsets[row] + sizes[row]) row++;
@@ -144,16 +167,24 @@ export function Home ({items, timeFormat, appearance, active, paused, onActivate
 
 	const handleKey = useCallback((key: NavKey): boolean => {
 		if (quietRef.current) return true;                    // the key that wakes the apps does nothing else
+		const s = stripRef.current;
+		if (s !== null) {                                       // in the Continue strip
+			if (key === 'left') setStrip(Math.max(0, s - 1));
+			else if (key === 'right') setStrip(Math.min(stripItems.length - 1, s + 1));
+			else if (key === 'down' || key === 'back') setStrip(null);
+			return true;
+		}
+		if (key === 'up' && stripItems.length && clampPosition(sizes, position).row === 0) { setStrip(0); return true; }
 		// functional updates, so quick repeated presses never act on a stale position
 		if (key === 'left' || key === 'right' || key === 'up' || key === 'down') setPosition((p) => movePosition(sizes, p, key));
 		else if (key === 'back') onBack();        // Back opens the Recent apps panel
 		return true;            // OK is handled by useOkPress below (press vs hold)
-	}, [sizeKey, onBack]);
+	}, [sizeKey, onBack, stripItems.length, position]);
 
 	useKeys(handleKey, active);
 	useOkPress({
 		onPress: () => { if (selectedItem && !quietRef.current) onActivate(selectedItem); },
-		onLongPress: () => { if (selectedItem && onLongPress && !quietRef.current) onLongPress(selectedItem); }
+		onLongPress: () => { if (selectedItem && onLongPress && !quietRef.current && !onStrip) onLongPress(selectedItem); }
 	}, active);
 
 	// The row's sizes are set on the row itself (not on :root), so the Settings grid keeps its own.
@@ -173,8 +204,8 @@ export function Home ({items, timeFormat, appearance, active, paused, onActivate
 	const classes = [rowVars.cls, 'rows', !appearance.showLabels && 'rows--no-labels', sizes.length > 1 && 'rows--multi', appearance.iconOpacity < 100 && 'rows--dim', quiet && 'rows--quiet', labelColorValue(appearance.labelColor) && 'rows--label-color', appearance.tileShape !== 'rounded' && `rows--shape-${appearance.tileShape}`].filter(Boolean).join(' ');
 
 	return (
-		<div class={`screen${active ? '' : ' screen--away'}${shift ? ' screen--shift' : ''}${shiftVars.cls ? ' ' + shiftVars.cls : ''}`} style={shiftVars.css || undefined}>
-			<Clock now={now} format={timeFormat} config={appearance.clock} weather={weather} cards={appearance.clockCards} />
+		<div class={`screen screen--home${night ? ' screen--night' : ''}${active ? '' : ' screen--away'}${shift ? ' screen--shift' : ''}${shiftVars.cls ? ' ' + shiftVars.cls : ''}`} style={shiftVars.css || undefined}>
+			<Clock now={now} format={timeFormat} config={appearance.clock} weather={weather} cards={appearance.clockCards} strip={stripItems} stripFocus={stripRef.current} />
 			<div class={classes} style={rowStyle}>
 				{sizes.map((size, r) => {
 					const start = offsets[r];
@@ -182,7 +213,7 @@ export function Home ({items, timeFormat, appearance, active, paused, onActivate
 						<Row
 							key={r}
 							items={items.slice(start, start + size)}
-							focused={r === at.row}
+							focused={r === at.row && !onStrip}
 							selected={at.cols[r]}
 							onSelect={(col) => setPosition({row: r, cols: at.cols.map((c, i) => (i === r ? col : c))})}
 							onActivate={(col) => onActivate(items[start + col])}

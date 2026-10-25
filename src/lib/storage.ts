@@ -74,6 +74,9 @@ export type {GlassTint};
 export const GLASS_TINTS: readonly GlassTint[] = ['violet', 'graphite', 'midnight', 'sunset'];
 /** Where the highlight goes when Home is pressed. */
 export type HomeFocus = 'first' | 'last';
+/** Night mode: dim the wallpaper and soften the clock between sunset and sunrise, or between fixed hours, or never. */
+export type NightMode = 'sun' | 'late' | 'off';
+export const NIGHT_MODES: readonly NightMode[] = ['sun', 'late', 'off'];
 
 export interface WeatherConfig {
 	/** show the weather line under the date */
@@ -169,6 +172,11 @@ export interface UserConfig {
 	reduceEffects: boolean;
 	/** where the highlight goes when Home is pressed (stored as homeReturn: the default changed to 'last' in 1.0.1) */
 	homeReturn: HomeFocus;
+	/** the last few apps under the clock (Up from the app row reaches them) */
+	showContinue: boolean;
+	nightMode: NightMode;
+	/** the weather city was set once from the TV's own time zone setting (or the user chose one), so it is not done again */
+	cityAutoDone: boolean;
 }
 
 export const THEME_IDS: ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist', 'glass'];
@@ -214,7 +222,7 @@ export const DEFAULT_CONFIG: UserConfig = {
 	showDebug: false,
 	replaceHome: false,
 	takeoverHome: false,
-	theme: 'black',
+	theme: 'glass',
 	background: 'theme',
 	iconScale: RANGES.iconScale.def,
 	iconOpacity: RANGES.iconOpacity.def,
@@ -243,7 +251,10 @@ export const DEFAULT_CONFIG: UserConfig = {
 	wallpaper: DEFAULT_WALLPAPER,
 	glassTint: 'violet',
 	reduceEffects: false,
-	homeReturn: 'last'
+	homeReturn: 'last',
+	showContinue: true,
+	nightMode: 'sun',
+	cityAutoDone: false
 };
 
 function stringList (value: unknown): string[] | null {
@@ -282,7 +293,7 @@ export function loadConfig (): UserConfig {
 			showDebug: parsed.showDebug === true,
 			replaceHome: parsed.replaceHome === true,
 			takeoverHome: parsed.takeoverHome === true,
-			theme: THEME_IDS.indexOf(parsed.theme as ThemeName) !== -1 ? (parsed.theme as ThemeName) : 'black',
+			theme: THEME_IDS.indexOf(parsed.theme as ThemeName) !== -1 ? (parsed.theme as ThemeName) : 'glass',
 			background: BACKGROUND_IDS.indexOf(parsed.background as string) !== -1 ? (parsed.background as string) : 'theme',
 			iconScale: ranged(parsed.iconScale, 'iconScale'),
 			iconOpacity: ranged(parsed.iconOpacity, 'iconOpacity'),
@@ -336,7 +347,10 @@ export function loadConfig (): UserConfig {
 			},
 			glassTint: GLASS_TINTS.indexOf(parsed.glassTint as GlassTint) !== -1 ? parsed.glassTint as GlassTint : 'violet',
 			reduceEffects: parsed.reduceEffects === true,
-			homeReturn: parsed.homeReturn === 'first' ? 'first' : 'last'
+			homeReturn: parsed.homeReturn === 'first' ? 'first' : 'last',
+			showContinue: parsed.showContinue !== false,
+			nightMode: NIGHT_MODES.indexOf(parsed.nightMode as NightMode) !== -1 ? parsed.nightMode as NightMode : 'sun',
+			cityAutoDone: parsed.cityAutoDone === true
 		};
 	} catch {
 		return {...DEFAULT_CONFIG};

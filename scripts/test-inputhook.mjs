@@ -2,7 +2,7 @@
 import {build} from 'esbuild';
 const stub = {name: 'stub', setup (b) {
 	b.onResolve({filter: /^\.\/apps$|^\.\/luna$/}, (a) => ({path: a.path, namespace: 'stub'}));
-	b.onLoad({filter: /.*/, namespace: 'stub'}, () => ({contents: 'export const exec = () => Promise.resolve(""); export const isWebOS = () => false; export const shellQuote = (v) => v;', loader: 'js'}));
+	b.onLoad({filter: /.*/, namespace: 'stub'}, () => ({contents: 'export const exec = () => Promise.resolve(""); export const isWebOS = () => false; export const lunaCall = () => Promise.reject(new Error("no")); export const shellQuote = (v) => v;', loader: 'js'}));
 }};
 const out = new URL('../node_modules/.cache-inputhook-test.mjs', import.meta.url).pathname;
 await build({entryPoints: [new URL('../src/lib/inputhook.ts', import.meta.url).pathname], bundle: true, format: 'esm', outfile: out, platform: 'node', logLevel: 'error', plugins: [stub]});
@@ -36,7 +36,7 @@ eq(h.parseKeybinds('[1,2]'), {}, 'a list is not a settings file');
 const stepBuild = new URL('../node_modules/.cache-inputhook-prefs-test.mjs', import.meta.url).pathname;
 const prefsStub = {name: 'stub2', setup (b) {
 	b.onResolve({filter: /^\.\/apps$|^\.\/luna$|^\.\/failure$|^\.\/wallpaper$|^\.\/system$/}, (a) => ({path: a.path, namespace: 'stub2'}));
-	b.onLoad({filter: /.*/, namespace: 'stub2'}, () => ({contents: 'export const exec = () => Promise.resolve(""); export const isWebOS = () => false; export const shellQuote = (v) => v; export const lastFailure = () => null; export const rootState = () => "unknown"; export const baseName = (p) => p;', loader: 'js'}));
+	b.onLoad({filter: /.*/, namespace: 'stub2'}, () => ({contents: 'export const exec = () => Promise.resolve(""); export const isWebOS = () => false; export const lunaCall = () => Promise.reject(new Error("no")); export const shellQuote = (v) => v; export const lastFailure = () => null; export const rootState = () => "unknown"; export const baseName = (p) => p;', loader: 'js'}));
 }};
 await build({entryPoints: [new URL('../src/lib/prefs.ts', import.meta.url).pathname], bundle: true, format: 'esm', outfile: stepBuild, platform: 'node', logLevel: 'error', plugins: [prefsStub]});
 const p = await import(stepBuild);

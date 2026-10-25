@@ -6,6 +6,7 @@ import {fontFamily} from '../lib/clockfont';
 import {hourLabel, type WeatherView} from '../lib/weather';
 import {WeatherGlyph} from './Glyph';
 import {varScope} from '../lib/cssvars';
+import type {TileModel} from './Tile';
 
 /** Glass cards: space kept above the app row, and how close to the top of the screen they may be moved. */
 const GAP_ABOVE_APPS = 28;
@@ -20,11 +21,33 @@ interface Props {
 	weather?: WeatherView | null;
 	/** Glass theme: the clock and the weather as two frosted cards of the same size, the weather under the clock */
 	cards?: boolean;
+	/** the Continue strip: the apps opened last, and which one is highlighted (null: none) */
+	strip?: TileModel[];
+	stripFocus?: number | null;
+}
+
+/** The Continue strip: small icons of the apps opened last. Up on the app row reaches it. */
+function ContinueStrip ({items, focus}: {items: TileModel[]; focus: number | null}) {
+	return (
+		<div class={`clock__continue${focus !== null ? ' clock__continue--active' : ''}`}>
+			<span class="clock__continue-title">Continue</span>
+			{items.map((t, i) => (
+				<div key={t.key} class={`clock__continue-item${i === focus ? ' clock__continue-item--focused' : ''}`}>
+					<div class="clock__continue-icon" style={t.color && !t.imageUrl ? {background: t.color} : undefined}>
+						{t.imageUrl || t.glyphImageUrl
+							? <img src={t.imageUrl || t.glyphImageUrl} alt="" />
+							: <span>{t.label.charAt(0).toUpperCase()}</span>}
+					</div>
+					{i === focus && <span class="clock__continue-label">{t.label}</span>}
+				</div>
+			))}
+		</div>
+	);
 }
 
 /** The clock: the time (with a small AM/PM beside it in 12-hour mode) and the date, and the weather when it is on.
  *  Size, thickness, colour, position and what is shown all come from the settings. */
-export function Clock ({now, format, config, weather, cards}: Props) {
+export function Clock ({now, format, config, weather, cards, strip, stripFocus = null}: Props) {
 	const size = config.size;
 	const info = colorInfo(config.color);
 	const vars: Record<string, string | undefined> = {'--clock-accent': info.accent};
@@ -51,6 +74,7 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 	const hasWeather = !!weather;
 	const hasRange = !!(weather && weather.range);
 	const hourCount = weather ? weather.hours.length : 0;
+	const stripCount = strip ? strip.length : 0;
 	useLayoutEffect(() => {
 		const el = box.current;
 		const stack = el && el.firstElementChild;
@@ -62,7 +86,7 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 		stack.classList.toggle('clock__cards--compact', fit.compact);     // back as rendered; a state change below re-renders it
 		const next = fitCards(corner, el.offsetTop, height, compactHeight, rows.offsetTop, GAP_ABOVE_APPS, MIN_TOP);
 		if (next.lift !== fit.lift || next.compact !== fit.compact || next.scale !== fit.scale) setFit(next);
-	}, [cards, corner, size, config.top, config.showDate, config.showPeriod, config.font, config.weight, hasWeather, hasRange, hourCount]);
+	}, [cards, corner, size, config.top, config.showDate, config.showPeriod, config.font, config.weight, hasWeather, hasRange, hourCount, stripCount]);
 	if (cards && corner) {
 		style.top = `${CORNER.top}px`;
 		style.left = `${CORNER.left}px`;
@@ -105,6 +129,7 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 						</div>
 					)}
 				</div>
+				{stripCount > 0 && <ContinueStrip items={strip as TileModel[]} focus={stripFocus} />}
 			</div>
 		);
 	}
@@ -118,6 +143,7 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 					<span>{weather.city ? weather.city + '  ·  ' : ''}{weather.main}{weather.range ? '  ·  ' + weather.range : ''}</span>
 				</div>
 			)}
+			{stripCount > 0 && <ContinueStrip items={strip as TileModel[]} focus={stripFocus} />}
 		</div>
 	);
 }

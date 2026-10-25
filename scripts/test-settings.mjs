@@ -28,7 +28,7 @@ const KEY = 'customlauncher-config-v1';
 
 // ---- defaults and loading ----
 const d = s.loadConfig();
-eq([d.theme, d.iconScale, d.sideMargin, d.bottomMargin, d.clockFormat, d.clock.size, d.clock.weight, d.clock.top, d.clock.left], ['black', 90, 20, 10, 'tv', 140, 200, 28, 50], 'defaults: OLED black, same-as-TV clock, icons 90%, margins 20 and 10');
+eq([d.theme, d.iconScale, d.sideMargin, d.bottomMargin, d.clockFormat, d.clock.size, d.clock.weight, d.clock.top, d.clock.left], ['glass', 90, 20, 10, 'tv', 140, 200, 28, 50], 'defaults: Glass, same-as-TV clock, icons 90%, margins 20 and 10');
 store[KEY] = JSON.stringify({theme: 'grey', iconScale: 999, sideMargin: 33, bottomMargin: -5, clock: {size: 12, top: 29, weight: 999, color: 'neon', showDate: false}, wallpaper: {mode: 'folder', path: '/x', intervalSec: 2}});
 const g = s.loadConfig();
 eq([g.theme, g.iconScale, g.sideMargin, g.bottomMargin], ['grey', 140, 30, 0], 'out-of-range numbers are clamped and snapped');
@@ -41,9 +41,9 @@ eq(s.loadConfig().clock.corner, true, 'the top-left corner choice is kept after 
 store[KEY] = JSON.stringify({clock: {corner: 'yes'}});
 eq(s.loadConfig().clock.corner, false, 'anything but true leaves the clock where it was');
 store[KEY] = JSON.stringify({theme: 'neon'});
-eq(s.loadConfig().theme, 'black', 'an unknown theme falls back to OLED black');
+eq(s.loadConfig().theme, 'glass', 'an unknown theme falls back to Glass');
 store[KEY] = '{not json';
-eq(s.loadConfig().theme, 'black', 'corrupt storage falls back to defaults');
+eq(s.loadConfig().theme, 'glass', 'corrupt storage falls back to defaults');
 store[KEY] = JSON.stringify({wallpaper: {mode: 'folder', path: ''}});
 eq(s.loadConfig().wallpaper.mode, 'gradient', 'folder mode without a path becomes default background');
 
@@ -80,7 +80,7 @@ eq(p.applyPref(c0, 'iconScale', 'right').iconScale, 100, 'right arrow: icon size
 eq(p.applyPref(c0, 'iconScale', 'left').iconScale, 80, 'left arrow: icon size 90 -> 80');
 eq(p.applyPref({...c0, iconScale: 140}, 'iconScale', 'right').iconScale, 140, 'right arrow stops at the maximum');
 eq(p.applyPref({...c0, iconScale: 140}, 'iconScale', 'ok').iconScale, 50, 'OK wraps to the minimum (50%)');
-eq(p.applyPref(c0, 'theme', 'ok').theme, 'grey', 'OK flips the theme');
+eq(p.applyPref(c0, 'theme', 'ok').theme, 'black', 'OK steps the theme (Glass wraps round to OLED black)');
 eq(p.applyPref(c0, 'showDate', 'ok').clock.showDate, false, 'OK flips a switch');
 eq(p.applyPref(c0, 'showDate', 'right') === c0, true, 'arrows leave a switch alone');
 eq(p.applyPref(c0, 'clockSize', 'right').clock.size, 150, 'clock size steps by 10');
@@ -94,23 +94,23 @@ eq(p.applyPref(c0, 'nonsense', 'ok') === c0, true, 'unknown option does nothing'
 eq(s.loadConfig().clock.left, 50, 'missing clock position defaults to the centre');
 const messy = {...c0, theme: 'grey', iconScale: 70, sideMargin: 0, bottomMargin: 200, clockFormat: '24h', clock: {...c0.clock, size: 220, color: 'amber'}, appIds: ['a'], wallpaper: {...c0.wallpaper, mode: 'image', path: '/p.jpg'}};
 const r = p.resetLook(messy);
-eq([r.theme, r.iconScale, r.sideMargin, r.bottomMargin, r.clockFormat, r.clock.size, r.clock.color], ['black', 90, 20, 10, 'tv', 140, 'white'], 'reset restores the look and clock');
+eq([r.theme, r.iconScale, r.sideMargin, r.bottomMargin, r.clockFormat, r.clock.size, r.clock.color], ['glass', 90, 20, 10, 'tv', 140, 'white'], 'reset restores the look and clock');
 eq([r.appIds, r.wallpaper.mode], [['a'], 'image'], 'reset keeps apps and wallpaper');
 
 // ---- the lists shown in Settings ----
 for (const tab of ['look', 'clock', 'wallpaper', 'options']) {
   const list = p.optionsFor(tab, c0);
-  eq(list.length >= 1 && list.length <= 20, true, `${tab} tab has ${list.length} options (a long list scrolls)`);
+  eq(list.length >= 1 && list.length <= 24, true, `${tab} tab has ${list.length} options (a long list scrolls)`);
 }
 const look = p.optionsFor('look', c0);
-eq(look.map((o) => o.valueText), ['OLED black', 'Violet', undefined, 'The app opened last', 'Off', undefined, '90%', '100%', 'Rounded square', '1 row', undefined, "The theme's own", undefined, undefined, '20 px', '10 px', '60%', '30%', undefined, 'Reset'], 'Look tab shows current values (the app-names switch has no text, it is a switch)');
+eq(look.map((o) => o.valueText), ['Glass (Apple TV style)', 'Violet', undefined, 'The app opened last', 'Sunset to sunrise', undefined, 'Off', undefined, '90%', '100%', 'Rounded square', '1 row', undefined, "The theme's own", undefined, undefined, '20 px', '10 px', '60%', '30%', undefined, 'Reset'], 'Look tab shows current values (the app-names switch has no text, it is a switch)');
 eq(p.applyPref(c0, 'rows', 'ok').rows, 2, 'Rows of apps: 1 -> 2');
 eq(p.applyPref(p.applyPref(c0, 'rows', 'ok'), 'rows', 'ok').rows, 1, 'and 2 -> 1');
 eq(p.applyPref(c0, 'showLabels', 'ok').showLabels, false, 'Show app names switches off');
 eq([s.DEFAULT_CONFIG.minimal, p.applyPref(c0, 'minimal', 'ok').minimal, p.resetLook({...c0, minimal: true}).minimal], [false, true, false], 'Minimalist icons: off by default, switch on, cleared by reset');
 store[KEY] = JSON.stringify({minimal: true}); eq(s.loadConfig().minimal, true, 'the minimalist choice is read back');
 store[KEY] = JSON.stringify({appEdits: {'a.b': {label: 'X'}, 'c.d': {icon: 'nope'}}}); eq(s.loadConfig().appEdits, {'a.b': {label: 'X'}}, 'app edits are read back and cleaned');
-eq(p.optionsFor('options', c0).map((o) => o.id).join(','), 'tvInput,takeover,replaceHome,homeButton,keyRed,keyGreen,keyYellow,keyBlue,lgLogo,tvApps,showDebug', 'the Options tab: TV input, the SAM method, the helper script, the LG logo, the TV app list (hidden when rooted) and last the Debug tab switch');
+eq(p.optionsFor('options', c0).map((o) => o.id).join(','), 'tvInput,takeover,replaceHome,homeButton,keyRed,keyGreen,keyYellow,keyBlue,lgLogo,update,tvApps,showDebug', 'the Options tab: TV input, the SAM method, the helper script, the LG logo, the TV app list (hidden when rooted) and last the Debug tab switch');
 eq(p.optionsFor('options', c0, {homeApp: null, homeHook: null, tvInput: true}).find((o) => o.id === 'tvInput').valueText, 'Added', 'the TV-input row says Added when the launcher is in the input list');
 eq(p.optionsFor('options', c0, {homeApp: null, homeHook: null, tvInput: false}).find((o) => o.id === 'tvInput').valueText, 'Not added', 'and Not added when it is not');
 eq(p.optionsFor('options', c0).find((o) => o.id === 'tvInput').valueText, 'Unknown', 'and Unknown until the TV has been asked');

@@ -9,7 +9,7 @@ It is a normal webOS app (app ID `com.thebigbear.lumen`). On a rooted TV it can 
 
 > **Reference devices:** Hearth, which Lumen is built on, is tested on an LG TV on firmware **04.60.90 (webOS 7.6.0)**, rooted with the Homebrew Channel. Lumen's own additions were tried on a rooted LG TV with **webOS 6.5.3**. Parts that were not tested on a TV are marked **experimental** below.
 
-![Lumen home screen](docs/screenshots/home-default.jpg)
+![Lumen home screen: the Glass theme, with the clock and weather as frosted cards](docs/screenshots/lumen-home.jpg)
 
 | | |
 |---|---|
@@ -30,6 +30,11 @@ Lumen is based on [Hearth](https://github.com/rudra-avatar/Hearth) 1.2.0 and add
 - **Remote buttons** through LG Input Hook: the Home button opens Lumen with no flash of LG Home, and the Red, Green, Yellow and Blue buttons can each open an app of your choice.
 - **Five new wallpapers:** Aurora, Dunes, Tide, Bloom and Horizon.
 - A new name, icon and app ID (`com.thebigbear.lumen`), so Lumen installs next to Hearth instead of replacing it.
+- **Night mode:** from sunset to sunrise (your weather city's times) the wallpaper dims under a warm veil and the clock softens.
+- **Continue strip:** the last three apps you opened, under the clock and weather. Press **Up** on the app row to reach them.
+- **Home goes back to the app you opened last**, not the first one.
+- **Your city from the TV:** a new install takes the weather city from the TV's own time zone setting.
+- **One-press updates** (Settings → Options → Lumen updates): on a rooted TV Lumen downloads the new version, checks its SHA-256, installs it and reopens. A short *what's new* message follows.
 
 ## What it does
 

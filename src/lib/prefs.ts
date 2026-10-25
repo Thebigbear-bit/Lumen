@@ -19,8 +19,9 @@ import {lastFailure, rootState, type RootState} from './failure';
 import type {LogoState} from './system';
 import type {TakeoverStatus} from './takeovercmd';
 import {COLOR_KEYS, type ColorKey, type RemoteState} from './inputhook';
+import {updateText, type UpdateState} from './update';
 import {GLASS_TINT_COLORS, type GlassTint} from '../theme/tokens';
-import {GLASS_TINTS, type HomeFocus} from './storage';
+import {GLASS_TINTS, NIGHT_MODES, type HomeFocus, type NightMode} from './storage';
 
 export type PrefTab = 'look' | 'clock' | 'weather' | 'wallpaper' | 'options';
 
@@ -43,6 +44,8 @@ export interface SystemInfo {
 	remote?: RemoteState | null;
 	/** app titles by id, for the colour-button rows */
 	appTitles?: Record<string, string>;
+	/** what the update check found (null before Settings first opens) */
+	update?: UpdateState | null;
 }
 
 const KEY_LABEL: Record<ColorKey, string> = {red: 'Red', green: 'Green', yellow: 'Yellow', blue: 'Blue'};
@@ -148,7 +151,7 @@ const WEIGHT_TEXT: Record<ClockWeight, string> = {200: 'Thin', 300: 'Light', 400
 export function resetLook (c: UserConfig): UserConfig {
 	return {
 		...c,
-		theme: 'black',
+		theme: 'glass',
 		glassTint: 'violet',
 		reduceEffects: false,
 		iconScale: RANGES.iconScale.def,
@@ -202,6 +205,10 @@ const BASE_PREFS: Pref[] = [
 		(c) => c.reduceEffects, (c, v) => ({...c, reduceEffects: v})),
 	choice('homeFocus', 'look', 'When Home is pressed', 'Which app is highlighted when you come back to the home screen: the one you opened last (from the row or the Recent apps panel), or the first.',
 		['last', 'first'] as const, (c) => c.homeReturn, (c, v) => ({...c, homeReturn: v}), (v: HomeFocus) => (v === 'last' ? 'The app opened last' : 'The first app')),
+	choice('nightMode', 'look', 'Night mode', 'Dims the wallpaper and gives the clock a softer, warmer look at night: easier on the eyes and on an OLED screen. "Sunset to sunrise" uses the times of your weather city (10 PM to 7 AM until they are known).',
+		NIGHT_MODES, (c) => c.nightMode, (c, v) => ({...c, nightMode: v}), (v: NightMode) => (v === 'sun' ? 'Sunset to sunrise' : v === 'late' ? '10 PM to 7 AM' : 'Off')),
+	toggle('showContinue', 'look', 'Continue strip', 'The last apps you opened, small, under the clock and weather. Press Up on the app row to reach them.',
+		(c) => c.showContinue, (c, v) => ({...c, showContinue: v})),
 	choice('quietSec', 'look', 'Quiet mode', 'Hides the apps (the clock stays) when no key is pressed for this long. Any key brings them back; that first key does nothing else. ← → or OK change it.',
 		rangeValues('quietSec'), (c) => c.quietSec, (c, v) => ({...c, quietSec: v}), (v) => (v === 0 ? 'Off' : `${v} seconds`)),
 	toggle('minimal', 'look', 'Minimalist icons', 'No border around the icons and no white or black frame on the selected one. The selected icon is simply bigger.',
@@ -332,6 +339,11 @@ const BASE_PREFS: Pref[] = [
 		})
 	})),
 	{
+		id: 'update', tab: 'options', label: 'Lumen updates', kind: 'action',
+		description: 'Lumen looks for a new version when Settings opens. OK installs it on a rooted TV (Lumen closes and opens again), or opens the Homebrew Channel. Your settings are kept.',
+		text: (_c, info) => updateText(info && info.update)
+	},
+	{
 		id: 'tvApps', tab: 'options', label: 'Load apps from the TV (experimental, no root)', kind: 'action',
 		description: 'For TVs that are not rooted: asks the TV itself for its full app list. Needs "LG Connect Apps" on in the TV settings. OK starts pairing: the TV asks to allow the connection, press OK on it. Might not work on every TV. If it does not, add apps by hand: see the guide on adding custom apps and icons at github.com/partridgeworks/webos-launcher. OK again turns it off.',
 		text: (c) => (c.tvApps ? 'On' : 'Off'),
@@ -349,7 +361,7 @@ export function findPref (id: string): Pref | undefined {
 }
 
 /** The order of the Options tab (anything not listed goes last). */
-const OPTIONS_ORDER = ['tvInput', 'takeover', 'replaceHome', 'homeButton', 'keyRed', 'keyGreen', 'keyYellow', 'keyBlue', 'lgLogo', 'tvApps', 'showDebug'];
+const OPTIONS_ORDER = ['tvInput', 'takeover', 'replaceHome', 'homeButton', 'keyRed', 'keyGreen', 'keyYellow', 'keyBlue', 'lgLogo', 'update', 'tvApps', 'showDebug'];
 
 function orderOf (tab: PrefTab, id: string): number {
 	if (tab !== 'options') return 0;

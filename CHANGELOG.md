@@ -1,5 +1,9 @@
 # Changelog
 
+## Lumen 1.1.2
+
+- **After switching the TV on**, the home screen starts at the first app again; pressing **Home** while using the TV still goes back to the app opened last. On a rooted TV Lumen tells by the TV's wakeup count (it goes up each time the TV wakes from standby), read in the background. Without root, an app opened more than 4 hours ago is not returned to.
+
 ## Lumen 1.1.1
 
 - The **LG Content Store** (LG's "Apps") is shown on the app row again, named *LG Content Store*. Hearth had hidden it.

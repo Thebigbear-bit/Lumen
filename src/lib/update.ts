@@ -16,7 +16,7 @@ const SEEN_KEY = 'lumen-last-version';
 const CHECK_EVERY_MS = 12 * 3600 * 1000;
 
 /** Shown once after an update to this version. */
-export const WHATS_NEW = 'The LG Content Store is back on the app row, so you can install apps again.';
+export const WHATS_NEW = 'After the TV is switched on, the home screen starts at the first app again; Home still returns to the app you opened last.';
 
 export interface Release {version: string; ipkUrl: string; sha256: string}
 

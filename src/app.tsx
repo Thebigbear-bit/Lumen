@@ -28,7 +28,7 @@ import {applyHomeHook, getHookStatus, hookMessage, installHomeHook, logLine, mar
 import {getTakeoverStatus, installTakeover, reapplyTakeover, removeTakeover, stockTakeover, takeoverMessage} from './lib/takeover';
 import {applyPref, COLOR_KEY_ROWS, disabledReason, findPref, nextKeyApp, optionsFor, resetLook, type Press, type SystemInfo} from './lib/prefs';
 import {getRemoteState, setRemote, type RemoteState} from './lib/inputhook';
-import {readLastOpened, readOpenedHistory, writeLastOpened} from './lib/lastopened';
+import {noteStandby, readOpenedHistory, returnKey, sleptSinceOpened, writeLastOpened} from './lib/lastopened';
 import {loadConfig, saveConfig, toggleId, DEFAULT_WALLPAPER, type UserConfig} from './lib/storage';
 import {applyTheme, colorsFor} from './theme/tokens';
 import {setRootVars} from './lib/cssvars';
@@ -579,7 +579,25 @@ export function App () {
 	const changeEdit = (patch: SourceEdit) => setConfig((c) => { const next = {...c, [storeKey]: setEdit(c[storeKey], editedKey, patch)}; saveConfig(next); return next; });
 
 	// Home pressed: with "the app opened last" chosen (the default), Home puts the highlight straight on it.
-	const wakeKey = useMemo(() => (config.homeReturn === 'last' ? readLastOpened() : null), [wakes, config.homeReturn]);
+	// After the TV was switched off and on it starts at the first tile instead: the TV's wakeup count (read in the
+	// background, rooted TVs) tells. Switching the TV on starts Lumen afresh, so then the highlight waits for the answer
+	// at the first tile; on Home while Lumen runs it goes to the app at once and only moves if the TV did sleep (rare).
+	const [wakeKey, setWakeKey] = useState<string | null>(null);
+	useEffect(() => {
+		if (config.homeReturn !== 'last') { setWakeKey(null); return undefined; }
+		const key = returnKey();
+		const fresh = wakes === 0;
+		setWakeKey(fresh ? null : key);
+		if (!key || !isWebOS()) { if (fresh) setWakeKey(key); return undefined; }
+		let live = true;
+		const asked = Date.now();
+		sleptSinceOpened().then((slept) => {
+			if (!live || Date.now() - asked > 2000) return;         // too late: the user is already moving around
+			if (slept) { noteStandby(); setWakeKey(null); log('The TV was switched off since the last app: Home starts at the first tile'); }
+			else if (fresh) setWakeKey(key);
+		});
+		return () => { live = false; };
+	}, [wakes, config.homeReturn]);
 	const continueKeys = useMemo(() => readOpenedHistory(), [wakes]);
 	// night mode: today's sun times from the weather (only for the chosen city)
 	const sunrise = weather && wxCity && weather.sunrise !== undefined ? weather.sunrise : null;

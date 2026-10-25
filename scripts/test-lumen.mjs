@@ -30,6 +30,16 @@ eq(h.pushHistory(['1', '2', '3', '4', '5', '6', '7', '8'], '9').length, 8, 'the 
 h.writeLastOpened('netflix'); h.writeLastOpened('youtube'); h.writeLastOpened('netflix');
 eq([h.readLastOpened(), h.readOpenedHistory()], ['netflix', ['netflix', 'youtube']], 'last opened and the history are kept together');
 
+const T0 = Date.now();
+h.writeLastOpened('netflix');
+eq(h.returnKey(T0 + 60000), 'netflix', 'Home goes back to the app opened last');
+store['lumen-last-opened-at'] = String(T0 - 20000);
+h.noteStandby(T0 - 10000);
+eq(h.returnKey(T0), null, 'after the TV was switched off, Home starts at the first tile');
+h.writeLastOpened('youtube');
+eq(h.returnKey(), 'youtube', 'an app opened after switching on is returned to again');
+eq(h.returnKey(Date.now() + 5 * 3600 * 1000), null, 'an app opened more than 4 hours ago is not (in case the switch-off was missed)');
+
 // ---- city from the TV ----
 const c = await load('tvcity');
 eq(c.placeFrom({City: 'Copenhagen', Country: 'Denmark', ZoneID: 'Europe/Copenhagen'}), {city: 'Copenhagen', country: 'Denmark'}, 'the TV time zone gives the city and country');

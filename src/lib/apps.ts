@@ -91,8 +91,9 @@ function listViaTv (): Promise<AppEntry[]> {
 interface ExecResponse extends LunaResponse { stdoutString?: string; }
 interface LaunchPoint { id: string; title: string; largeIcon?: string; icon?: string; removable?: boolean; }
 
-/** Apps LG lists but that make no sense on a launcher (ourselves, promos). */
-const HIDDEN_IDS = [APP_ID, 'google.assistant.promo', 'com.webos.app.discovery'];
+/** Apps LG lists but that make no sense on a launcher (ourselves, promos). The LG Content Store is shown: it is
+ *  where apps are installed from. */
+const HIDDEN_IDS = [APP_ID, 'google.assistant.promo'];
 
 const ICON_CACHE_KEY = 'launcher-icon-cache-v1';
 

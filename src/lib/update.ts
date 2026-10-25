@@ -16,7 +16,7 @@ const SEEN_KEY = 'lumen-last-version';
 const CHECK_EVERY_MS = 12 * 3600 * 1000;
 
 /** Shown once after an update to this version. */
-export const WHATS_NEW = 'Night mode, a Continue strip (press Up on the apps), your city from the TV, and updates in Settings → Options.';
+export const WHATS_NEW = 'The LG Content Store is back on the app row, so you can install apps again.';
 
 export interface Release {version: string; ipkUrl: string; sha256: string}
 

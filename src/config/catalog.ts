@@ -62,6 +62,7 @@ const BASE_CATALOG: CatalogApp[] = [
 	// LG built-ins
 	{id: 'com.webos.app.browser', title: 'Browser', icon: 'com.webos.app.browser.png'},
 	{id: 'com.webos.app.mediadiscovery', title: 'Media Player', icon: 'com.webos.app.mediadiscovery.png'},
+	{id: 'com.webos.app.discovery', title: 'LG Content Store', color: '#A50034'},
 	{id: 'com.webos.app.igallery', title: 'Art Gallery', icon: 'com.webos.app.igallery.png'},
 	{id: 'com.webos.app.homeconnect', title: 'Home Dashboard', icon: 'com.webos.app.homeconnect.png'},
 	{id: 'amazon.alexa.view', title: 'Alexa', icon: 'amazon.alexa.view.png'},

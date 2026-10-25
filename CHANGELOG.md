@@ -1,5 +1,9 @@
 # Changelog
 
+## Lumen 1.1.1
+
+- The **LG Content Store** (LG's "Apps") is shown on the app row again, named *LG Content Store*. Hearth had hidden it.
+
 ## Lumen 1.1.0
 
 - **Night mode** (Look): from sunset to sunrise (the times of your weather city), or 10 PM to 7 AM, the wallpaper is dimmed under a warm veil and the clock is softer. On by default (sunset to sunrise); Off is a choice.

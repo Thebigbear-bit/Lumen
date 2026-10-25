@@ -14,18 +14,18 @@
       "fullDescriptionUrl": "https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/repo/description.html",
       "manifest": {
         "id": "com.thebigbear.lumen",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "type": "web",
         "title": "Lumen",
         "appDescription": "When speed meets the light: a fast home screen for LG webOS TVs with a clock, weather, your apps and inputs, and wallpapers.",
         "iconUri": "https://raw.githubusercontent.com/Thebigbear-bit/Lumen/main/public/largeIcon.png",
         "sourceUrl": "https://github.com/Thebigbear-bit/Lumen",
         "rootRequired": "optional",
-        "ipkUrl": "https://github.com/Thebigbear-bit/Lumen/releases/download/v1.1.0/com.thebigbear.lumen_1.1.0_all.ipk",
+        "ipkUrl": "https://github.com/Thebigbear-bit/Lumen/releases/download/v1.1.1/com.thebigbear.lumen_1.1.1_all.ipk",
         "ipkHash": {
-          "sha256": "d68a96a810fae42cce91b0b0c927bc78b633f02e9401cccc5ec9e473d7cdbd96"
+          "sha256": "debf899712671c58c8ecf2dc40965371bdb3f4a2ca688d5210864fa91ba3cc41"
         },
-        "ipkSize": 4467004
+        "ipkSize": 4466994
       }
     }
   ]

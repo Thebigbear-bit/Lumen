@@ -3,7 +3,7 @@ import {fitCards, fullDate, timeParts, type CardFit, type TimeFormat} from '../l
 import type {ClockConfig} from '../lib/storage';
 import {colorInfo} from '../lib/clockcolor';
 import {fontFamily} from '../lib/clockfont';
-import type {WeatherView} from '../lib/weather';
+import {hourLabel, type WeatherView} from '../lib/weather';
 import {WeatherGlyph} from './Glyph';
 import {varScope} from '../lib/cssvars';
 
@@ -50,6 +50,7 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 	const [fit, setFit] = useState<CardFit>({lift: 0, compact: false, scale: 1});
 	const hasWeather = !!weather;
 	const hasRange = !!(weather && weather.range);
+	const hourCount = weather ? weather.hours.length : 0;
 	useLayoutEffect(() => {
 		const el = box.current;
 		const stack = el && el.firstElementChild;
@@ -61,7 +62,7 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 		stack.classList.toggle('clock__cards--compact', fit.compact);     // back as rendered; a state change below re-renders it
 		const next = fitCards(corner, el.offsetTop, height, compactHeight, rows.offsetTop, GAP_ABOVE_APPS, MIN_TOP);
 		if (next.lift !== fit.lift || next.compact !== fit.compact || next.scale !== fit.scale) setFit(next);
-	}, [cards, corner, size, config.top, config.showDate, config.showPeriod, config.font, config.weight, hasWeather, hasRange]);
+	}, [cards, corner, size, config.top, config.showDate, config.showPeriod, config.font, config.weight, hasWeather, hasRange, hourCount]);
 	if (cards && corner) {
 		style.top = `${CORNER.top}px`;
 		style.left = `${CORNER.left}px`;
@@ -89,6 +90,17 @@ export function Clock ({now, format, config, weather, cards}: Props) {
 									{weather.range && <span class="clock__card-range">{weather.range}</span>}
 								</span>
 							</div>
+							{weather.hours.length > 0 && (
+								<div class="clock__card-hours">
+									{weather.hours.map((h) => (
+										<div class="clock__card-hour" key={h.hour}>
+											<span class="clock__card-hour-time">{hourLabel(h.hour, format)}</span>
+											<WeatherGlyph icon={h.icon} />
+											<span class="clock__card-hour-temp">{h.temp}</span>
+										</div>
+									))}
+								</div>
+							)}
 							</div>
 						</div>
 					)}

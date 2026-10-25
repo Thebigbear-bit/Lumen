@@ -29,6 +29,11 @@ export const BACKGROUNDS: readonly Background[] = [
 	{id: 'nature-09', label: 'Photo: Nature 9', colors: ['#0e140e', '#0b100b', '#050a06'], image: 'wallpapers/nature-09.jpg'},
 	{id: 'nature-10', label: 'Photo: Nature 10', colors: ['#3c3934', '#262824', '#161f1d'], image: 'wallpapers/nature-10.jpg'},
 	{id: 'nature-11', label: 'Photo: Nature 11', colors: ['#051621', '#13333e', '#12262d'], image: 'wallpapers/nature-11.jpg'},
+	{id: 'pic-aurora', label: 'Picture: Aurora', colors: ['#03060d', '#061420', '#02040a'], image: 'wallpapers/aurora.jpg'},
+	{id: 'pic-dunes', label: 'Picture: Dunes', colors: ['#2a1530', '#a8465a', '#e9925e'], image: 'wallpapers/dunes.jpg'},
+	{id: 'pic-tide', label: 'Picture: Tide', colors: ['#06131c', '#0c2a38', '#041018'], image: 'wallpapers/tide.jpg'},
+	{id: 'pic-bloom', label: 'Picture: Bloom', colors: ['#1a1428', '#2a1f3c', '#120d1c'], image: 'wallpapers/bloom.jpg'},
+	{id: 'pic-horizon', label: 'Picture: Horizon', colors: ['#05070d', '#1a2440', '#2b3456'], image: 'wallpapers/horizon.jpg'},
 	{id: 'charcoal', label: 'Plain: charcoal', colors: plain('#1a1a1a')},
 	{id: 'navy', label: 'Plain: deep navy', colors: plain('#0d1b2a')},
 	{id: 'dusk', label: 'Gradient: Dusk (dark)', colors: ['#2b1055', '#5b2a86', '#1a0b2e']},
@@ -45,7 +50,7 @@ export const BACKGROUNDS: readonly Background[] = [
 
 /** The bundled photos, and the id of the slideshow that plays them one after another (see app.tsx). */
 export const NATURE_SHOW = 'nature-show';
-export const NATURE_IDS: string[] = BACKGROUNDS.filter((b) => !!b.image).map((b) => b.id);
+export const NATURE_IDS: string[] = BACKGROUNDS.filter((b) => !!b.image && b.id.indexOf('nature-') === 0).map((b) => b.id);
 
 /** The next photo of the slideshow: a random other one when shuffled, else the following one. */
 export function nextNature (index: number, shuffle: boolean): number {

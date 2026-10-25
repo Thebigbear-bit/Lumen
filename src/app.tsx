@@ -26,9 +26,10 @@ import {startLogFile, writeReport, previousRunLines} from './lib/logfile';
 import {readStats, type SystemStats, getLogo, setLogo, closeLgHome} from './lib/system';
 import {applyHomeHook, getHookStatus, hookMessage, installHomeHook, logLine, markAliveSoon, reapplyHomeHook, removeHomeHook, stockHome} from './lib/homehook';
 import {getTakeoverStatus, installTakeover, reapplyTakeover, removeTakeover, stockTakeover, takeoverMessage} from './lib/takeover';
-import {applyPref, disabledReason, findPref, optionsFor, resetLook, type Press, type SystemInfo} from './lib/prefs';
+import {applyPref, COLOR_KEY_ROWS, disabledReason, findPref, nextKeyApp, optionsFor, resetLook, type Press, type SystemInfo} from './lib/prefs';
+import {getRemoteState, setRemote, type RemoteState} from './lib/inputhook';
 import {loadConfig, saveConfig, toggleId, DEFAULT_WALLPAPER, type UserConfig} from './lib/storage';
-import {applyTheme, THEMES} from './theme/tokens';
+import {applyTheme, colorsFor} from './theme/tokens';
 import {setRootVars} from './lib/cssvars';
 import {applyBackground, NATURE_SHOW} from './lib/backgrounds';
 import {mark} from './lib/perfmarks';
@@ -58,6 +59,14 @@ const MISC_TILES: TileModel[] = [
 	{key: MISC.settings, label: 'Hearth Settings', glyph: 'gear'}
 ];
 
+const LAST_OPENED_KEY = 'customlauncher-last-opened';
+function readLastOpened (): string | null {
+	try { return localStorage.getItem(LAST_OPENED_KEY); } catch { return null; }
+}
+function writeLastOpened (key: string): void {
+	try { localStorage.setItem(LAST_OPENED_KEY, key); } catch { /* storage full or blocked: only this convenience is lost */ }
+}
+
 export function App () {
 	const [screen, setScreen] = useState<Screen>('home');
 	const settingsOpen = screen !== 'home';   // Settings stays open under its sub-screens (editor, pickers)
@@ -79,6 +88,8 @@ export function App () {
 	const closeRecents = useCallback(() => setRecents(false), []);
 	const [menu, setMenu] = useState<{key: string; title: string; app: AppEntry | null} | null>(null);   // the tile whose Move / Hide / Uninstall menu is open
 	const [focus, setFocus] = useState<{key: string; seq: number} | undefined>(undefined);               // asks Home to follow a moved tile
+	const lastOpened = useRef<string | null>(readLastOpened());          // the app or input opened last (Look → When Home is pressed)
+	const remoteWrite = useRef(0);                                       // pending write of the remote buttons (Options)
 	const replaceRef = useRef(config.replaceHome || config.takeoverHome);
 	const [allInputs, setInputs] = useState<InputSource[]>([]);
 	// the launcher itself may be in the TV's input list (see Options): it is not offered as a source
@@ -125,7 +136,7 @@ export function App () {
 		const a = config.fadeStrength / 100;
 		setRootVars({'--fade-display': a > 0 ? 'block' : 'none', '--fade-height': `${config.fadeHeight}%`, '--fade-a': String(a), '--fade-b': (a * 0.55).toFixed(3), '--fade-c': (a * 0.2).toFixed(3)});
 	}, [config.fadeStrength, config.fadeHeight]);
-	useEffect(() => { applyTheme(config.theme); applyBackground(config.background, THEMES[config.theme]); }, [config.theme, config.background]);
+	useEffect(() => { applyTheme(config.theme, config.glassTint, config.reduceEffects); applyBackground(config.background, colorsFor(config.theme, config.glassTint)); }, [config.theme, config.background, config.glassTint, config.reduceEffects]);
 
 	useEffect(() => { document.documentElement.classList.toggle('look-minimal', config.minimal); }, [config.minimal]);
 
@@ -310,7 +321,7 @@ export function App () {
 				if (!live) return undefined;
 				if (root === 'yes') readHomebrewVersion().then((homebrew) => { if (live && homebrew) setVersions((p) => ({...p, homebrew})); });
 				if (root === 'no') { setSystemInfo({homeHook: null, logo: null, takeover: null, root, rootDetail}); return undefined; }
-				return Promise.all([getHookStatus(), getLogo(), getTakeoverStatus()]).then(([homeHook, logo, takeover]) => { if (live) setSystemInfo({homeHook, logo, takeover, root, rootDetail}); });
+				return Promise.all([getHookStatus(), getLogo(), getTakeoverStatus(), getRemoteState(APP_ID)]).then(([homeHook, logo, takeover, remote]) => { if (live) setSystemInfo({homeHook, logo, takeover, root, rootDetail, remote}); });
 			});
 			return () => { live = false; };
 		}
@@ -438,8 +449,8 @@ export function App () {
 	const weatherLine = useMemo(() => {
 		if (!wxCity) return null;
 		const data = usableCached(weather, wxCity.lat, wxCity.lon, Date.now());
-		return data ? weatherView(data, wx.unit, wx.showRange, wx.showCity ? wxCity.name : '') : null;
-	}, [weather, wxCity, wx.unit, wx.showRange, wx.showCity]);
+		return data ? weatherView(data, wx.unit, wx.showRange, wx.showCity ? wxCity.name : '', wx.showHours) : null;
+	}, [weather, wxCity, wx.unit, wx.showRange, wx.showCity, wx.showHours]);
 
 	// Tell the user once if the safety switch-off fired.
 	useEffect(() => {
@@ -502,6 +513,9 @@ export function App () {
 		readStats().then((st) => { statsRef.current = st; setDebugTick((n) => n + 1); save(); });
 	}, [config, versions]);                                                  // eslint-disable-line react-hooks/exhaustive-deps
 
+	// app titles by id, for the colour-button rows in Options
+	const appTitles = useMemo(() => { const t: Record<string, string> = {}; apps.forEach((a) => { t[a.id] = a.title; }); return t; }, [apps]);
+
 	const tabs: SettingsTab[] = useMemo(() => [
 		{id: TAB.apps, label: 'Apps', noun: 'apps', refresh: true, items: orderTiles(apps.map((a) => appTile(a, config.appEdits)), (t) => t.key, config.appIds), shown: shownApps.map((a) => appTile(a, config.appEdits)), edit: true},
 		{id: TAB.sources, label: 'Sources', noun: 'sources', items: inputs.map((i) => inputTile(i, config.sourceEdits)), shown: shownInputs.map((i) => inputTile(i, config.sourceEdits)), edit: true},
@@ -509,16 +523,23 @@ export function App () {
 		{id: TAB.clock, label: 'Clock', noun: '', items: [], shown: [], options: optionsFor('clock', config)},
 		...(WEATHER_ENABLED ? [{id: TAB.weather, label: 'Weather', noun: '', items: [], shown: [], options: optionsFor('weather', config)}] : []),
 		{id: TAB.wallpaper, label: 'Wallpaper', noun: '', items: [], shown: [], options: optionsFor('wallpaper', config)},
-		{id: TAB.options, label: 'Options', noun: '', items: [], shown: [], options: optionsFor('options', config, {...systemInfo, tvInput})},
+		{id: TAB.options, label: 'Options', noun: '', items: [], shown: [], options: optionsFor('options', config, {...systemInfo, tvInput, appTitles})},
 		...(config.showDebug ? [{id: TAB.debug, label: 'Debug', noun: '', items: [], shown: [], pages: debugPagesNow}] : []),
 		...(PROBE_ENABLED && config.showDebug ? [{id: TAB.tests, label: 'Tests', noun: '', items: [], shown: [], options: probeOptions(probe)}] : [])
-	], [apps, inputs, shownApps, shownInputs, config, systemInfo, tvInput, probe, debugPagesNow]);
+	], [apps, inputs, shownApps, shownInputs, config, systemInfo, tvInput, probe, debugPagesNow, appTitles]);
 
 	const editedSource = editKey ? inputs.filter((i) => i.appId === editKey)[0] : undefined;
 	const editedApp = editKey && !editedSource ? apps.filter((a) => a.id === editKey)[0] : undefined;
 	const editedKey = editedSource ? editedSource.appId : editedApp ? editedApp.id : '';
 	const storeKey: 'sourceEdits' | 'appEdits' = editedSource ? 'sourceEdits' : 'appEdits';
 	const changeEdit = (patch: SourceEdit) => setConfig((c) => { const next = {...c, [storeKey]: setEdit(c[storeKey], editedKey, patch)}; saveConfig(next); return next; });
+
+	// Home pressed: with "the app opened last" chosen, the highlight goes to it (Home itself starts at the first tile).
+	useEffect(() => {
+		if (config.homeFocus !== 'last' || !lastOpened.current) return;
+		const key = lastOpened.current;
+		setFocus((f) => ({key, seq: (f ? f.seq : 0) + 1}));
+	}, [wakes]);
 
 	const appearance: Appearance = useMemo(
 		() => ({iconScale: config.iconScale, iconOpacity: config.iconOpacity, labelColor: config.labelColor, iconGap: config.iconGap, tileShape: config.tileShape, quietSec: config.quietSec, oledShift: config.oledShift, sideMargin: config.sideMargin, bottomMargin: config.bottomMargin, showLabels: config.showLabels, rows: config.rows, clock: config.clock, clockCards: config.theme === 'glass'}),
@@ -548,6 +569,8 @@ export function App () {
 		// With the helper on: say the launcher is alive and note what is being opened, so the helper's check
 		// can never mistake this moment for a failure, and its log shows what happened if an app does not open.
 		if (config.replaceHome) markAliveSoon(`launcher: opening ${item.key}`, false);
+		lastOpened.current = item.key;
+		writeLastOpened(item.key);
 		launchApp(item.key).catch(() => {
 			if (config.replaceHome) logLine(`launcher: the TV refused to open ${item.key}`);
 			showToast(`Couldn't open ${item.label}`, 'error');
@@ -656,6 +679,24 @@ export function App () {
 					}))
 					.catch((error) => showToast(failureText(error, 'change the TV input'), 'error'));
 			}
+			else if (optionId === 'homeButton' || COLOR_KEY_ROWS[optionId]) {
+				const remote = systemInfo.remote;
+				if (!remote) { showToast('Still reading the remote buttons, try again in a moment'); return; }
+				if (optionId === 'homeButton' && press !== 'ok') return;
+				const next: RemoteState = optionId === 'homeButton'
+					? {...remote, home: !remote.home}
+					: {...remote, keys: {...remote.keys, [COLOR_KEY_ROWS[optionId]]: nextKeyApp(remote.keys[COLOR_KEY_ROWS[optionId]], apps.map((a) => a.id), press)}};
+				setSystemInfo((previous) => ({...previous, remote: next}));        // shown at once; written to the TV just below
+				window.clearTimeout(remoteWrite.current);
+				// stepping through the apps writes once, when the stepping stops
+				remoteWrite.current = window.setTimeout(() => {
+					setRemote(next, APP_ID).then((result) => {
+						if (result === 'ok') { if (optionId === 'homeButton') showToast(next.home ? 'The Home button now opens the launcher directly' : 'The Home button works as usual again'); }
+						else showToast(result === 'missing' ? 'Needs LG Input Hook: install it from the Homebrew Channel first' : `Couldn't change the button${whySuffix()}`, 'error');
+						return getRemoteState(APP_ID).then((remote) => setSystemInfo((previous) => ({...previous, remote})));
+					});
+				}, optionId === 'homeButton' ? 0 : 700);
+			}
 			else if (optionId === 'lgLogo') {
 				const wantOn = systemInfo.logo !== 'on';
 				showToast('Changing…');
@@ -668,7 +709,7 @@ export function App () {
 		}
 		const next = applyPref(config, optionId, press);
 		if (next !== config) updateConfig(next);
-	}, [config, showToast, systemInfo, tvInput]);
+	}, [config, showToast, systemInfo, tvInput, apps]);
 
 	const onRefresh = useCallback(() => {
 		manualLoad.current = true;

@@ -25,6 +25,16 @@ export interface WeatherData {
 	isDay: boolean;
 	/** when it was read (ms since 1970) */
 	at: number;
+	/** the next few hours (absent in readings saved by older versions) */
+	hours?: HourData[];
+}
+
+export interface HourData {
+	/** the hour of day, 0-23, in the place's own time */
+	hour: number;
+	tempC: number;
+	code: number;
+	isDay: boolean;
 }
 
 export const WEATHER_CACHE_KEY = 'customlauncher-weather-v1';
@@ -46,7 +56,8 @@ export function validCoords (lat: unknown, lon: unknown): boolean {
 
 export function forecastUrl (lat: number, lon: number): string {
 	return 'https://api.open-meteo.com/v1/forecast?latitude=' + coord(lat) + '&longitude=' + coord(lon)
-		+ '&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto';
+		+ '&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day&forecast_hours=4'
+		+ '&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto';
 }
 
 export function geocodeUrl (query: string): string {
@@ -63,10 +74,33 @@ export function parseWeather (json: string, lat: number, lon: number, now: numbe
 		if (temp === null || code === null) return null;
 		const daily = data.daily || {};
 		const first = (list: unknown): number | null => (Array.isArray(list) ? num(list[0]) : null);
-		return {lat, lon, tempC: temp, highC: first(daily.temperature_2m_max), lowC: first(daily.temperature_2m_min), code, isDay: current.is_day !== 0, at: now};
+		return {lat, lon, tempC: temp, highC: first(daily.temperature_2m_max), lowC: first(daily.temperature_2m_min), code, isDay: current.is_day !== 0, at: now, hours: parseHours(data.hourly)};
 	} catch {
 		return null;
 	}
+}
+
+/** The hours after the current one (the hourly list starts at the current hour). Bad entries are skipped. */
+function parseHours (hourly: unknown): HourData[] {
+	const h = (hourly && typeof hourly === 'object' ? hourly : {}) as Record<string, unknown>;
+	const times = Array.isArray(h.time) ? h.time : [];
+	const temps = Array.isArray(h.temperature_2m) ? h.temperature_2m : [];
+	const codes = Array.isArray(h.weather_code) ? h.weather_code : [];
+	const days = Array.isArray(h.is_day) ? h.is_day : [];
+	const out: HourData[] = [];
+	for (let i = 1; i < times.length && out.length < 3; i++) {
+		const match = typeof times[i] === 'string' ? /T(\d{2}):/.exec(times[i] as string) : null;
+		const tempC = num(temps[i]), code = num(codes[i]);
+		if (!match || tempC === null || code === null) continue;
+		out.push({hour: Number(match[1]), tempC, code, isDay: days[i] !== 0});
+	}
+	return out;
+}
+
+/** "15:00" or "3 PM" */
+export function hourLabel (hour: number, format: '12h' | '24h'): string {
+	if (format === '24h') return (hour < 10 ? '0' : '') + hour + ':00';
+	return (hour % 12 || 12) + (hour < 12 ? ' AM' : ' PM');
 }
 
 /** Reads Open-Meteo's place-search reply into a list of cities. */
@@ -129,14 +163,17 @@ export interface WeatherView {
 	/** "H 31° L 25°", or empty */
 	range: string;
 	city: string;
+	/** the next hours, for the Glass weather card (empty when off or unknown) */
+	hours: {hour: number; temp: string; icon: WeatherIcon}[];
 }
 
 /** What the clock shows. */
-export function weatherView (data: WeatherData, unit: TempUnit, showRange: boolean, cityName: string): WeatherView {
+export function weatherView (data: WeatherData, unit: TempUnit, showRange: boolean, cityName: string, showHours = false): WeatherView {
 	const d = describe(data.code, data.isDay);
 	const range = showRange && data.highC !== null && data.lowC !== null ? 'H ' + formatTemp(data.highC, unit) + '  L ' + formatTemp(data.lowC, unit) : '';
 	const temp = formatTemp(data.tempC, unit);
-	return {icon: d.icon, main: temp + ' ' + d.text, temp, text: d.text, range, city: cityName};
+	const hours = showHours && data.hours ? data.hours.map((h) => ({hour: h.hour, temp: formatTemp(h.tempC, unit), icon: describe(h.code, h.isDay).icon})) : [];
+	return {icon: d.icon, main: temp + ' ' + d.text, temp, text: d.text, range, city: cityName, hours};
 }
 
 export function isFresh (data: WeatherData | null, lat: number, lon: number, now: number): boolean {

@@ -69,6 +69,12 @@ export interface ClockConfig {
 	corner: boolean;
 }
 
+import type {GlassTint} from '../theme/tokens';
+export type {GlassTint};
+export const GLASS_TINTS: readonly GlassTint[] = ['violet', 'graphite', 'midnight', 'sunset'];
+/** Where the highlight goes when Home is pressed. */
+export type HomeFocus = 'first' | 'last';
+
 export interface WeatherConfig {
 	/** show the weather line under the date */
 	on: boolean;
@@ -77,6 +83,8 @@ export interface WeatherConfig {
 	showCity: boolean;
 	/** today's high and low */
 	showRange: boolean;
+	/** the next three hours (in the Glass theme's weather card) */
+	showHours: boolean;
 }
 
 export interface WallpaperConfig {
@@ -155,6 +163,11 @@ export interface UserConfig {
 	clock: ClockConfig;
 	weather: WeatherConfig;
 	wallpaper: WallpaperConfig;
+	/** the Glass theme's colour */
+	glassTint: GlassTint;
+	/** no blur and simpler motion (faster on slow TVs) */
+	reduceEffects: boolean;
+	homeFocus: HomeFocus;
 }
 
 export const THEME_IDS: ThemeName[] = ['black', 'grey', 'midnight', 'forest', 'cloud', 'sand', 'mist', 'glass'];
@@ -171,7 +184,8 @@ export const DEFAULT_WEATHER: WeatherConfig = {
 	city: DEFAULT_CITY,
 	unit: 'c',
 	showCity: true,
-	showRange: false
+	showRange: false,
+	showHours: true
 };
 
 export const DEFAULT_CLOCK: ClockConfig = {
@@ -225,7 +239,10 @@ export const DEFAULT_CONFIG: UserConfig = {
 	clockFormat: 'tv',
 	clock: DEFAULT_CLOCK,
 	weather: DEFAULT_WEATHER,
-	wallpaper: DEFAULT_WALLPAPER
+	wallpaper: DEFAULT_WALLPAPER,
+	glassTint: 'violet',
+	reduceEffects: false,
+	homeFocus: 'first'
 };
 
 function stringList (value: unknown): string[] | null {
@@ -307,14 +324,18 @@ export function loadConfig (): UserConfig {
 				city,
 				unit: wx.unit === 'f' ? 'f' : 'c',
 				showCity: wx.showCity !== false,
-				showRange: wx.showRange !== false
+				showRange: wx.showRange !== false,
+				showHours: wx.showHours !== false
 			},
 			wallpaper: {
 				mode: path ? mode : 'gradient',
 				path,
 				intervalSec: interval,
 				shuffle: w.shuffle !== false
-			}
+			},
+			glassTint: GLASS_TINTS.indexOf(parsed.glassTint as GlassTint) !== -1 ? parsed.glassTint as GlassTint : 'violet',
+			reduceEffects: parsed.reduceEffects === true,
+			homeFocus: parsed.homeFocus === 'last' ? 'last' : 'first'
 		};
 	} catch {
 		return {...DEFAULT_CONFIG};

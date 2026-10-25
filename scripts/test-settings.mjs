@@ -103,14 +103,14 @@ for (const tab of ['look', 'clock', 'wallpaper', 'options']) {
   eq(list.length >= 1 && list.length <= 20, true, `${tab} tab has ${list.length} options (a long list scrolls)`);
 }
 const look = p.optionsFor('look', c0);
-eq(look.map((o) => o.valueText), ['OLED black', 'Off', undefined, '90%', '100%', 'Rounded square', '1 row', undefined, "The theme's own", undefined, undefined, '20 px', '10 px', '60%', '30%', undefined, 'Reset'], 'Look tab shows current values (the app-names switch has no text, it is a switch)');
+eq(look.map((o) => o.valueText), ['OLED black', 'Violet', undefined, 'The first app', 'Off', undefined, '90%', '100%', 'Rounded square', '1 row', undefined, "The theme's own", undefined, undefined, '20 px', '10 px', '60%', '30%', undefined, 'Reset'], 'Look tab shows current values (the app-names switch has no text, it is a switch)');
 eq(p.applyPref(c0, 'rows', 'ok').rows, 2, 'Rows of apps: 1 -> 2');
 eq(p.applyPref(p.applyPref(c0, 'rows', 'ok'), 'rows', 'ok').rows, 1, 'and 2 -> 1');
 eq(p.applyPref(c0, 'showLabels', 'ok').showLabels, false, 'Show app names switches off');
 eq([s.DEFAULT_CONFIG.minimal, p.applyPref(c0, 'minimal', 'ok').minimal, p.resetLook({...c0, minimal: true}).minimal], [false, true, false], 'Minimalist icons: off by default, switch on, cleared by reset');
 store[KEY] = JSON.stringify({minimal: true}); eq(s.loadConfig().minimal, true, 'the minimalist choice is read back');
 store[KEY] = JSON.stringify({appEdits: {'a.b': {label: 'X'}, 'c.d': {icon: 'nope'}}}); eq(s.loadConfig().appEdits, {'a.b': {label: 'X'}}, 'app edits are read back and cleaned');
-eq(p.optionsFor('options', c0).map((o) => o.id).join(','), 'tvInput,takeover,replaceHome,lgLogo,tvApps,showDebug', 'the Options tab: TV input, the SAM method, the helper script, the LG logo, the TV app list (hidden when rooted) and last the Debug tab switch');
+eq(p.optionsFor('options', c0).map((o) => o.id).join(','), 'tvInput,takeover,replaceHome,homeButton,keyRed,keyGreen,keyYellow,keyBlue,lgLogo,tvApps,showDebug', 'the Options tab: TV input, the SAM method, the helper script, the LG logo, the TV app list (hidden when rooted) and last the Debug tab switch');
 eq(p.optionsFor('options', c0, {homeApp: null, homeHook: null, tvInput: true}).find((o) => o.id === 'tvInput').valueText, 'Added', 'the TV-input row says Added when the launcher is in the input list');
 eq(p.optionsFor('options', c0, {homeApp: null, homeHook: null, tvInput: false}).find((o) => o.id === 'tvInput').valueText, 'Not added', 'and Not added when it is not');
 eq(p.optionsFor('options', c0).find((o) => o.id === 'tvInput').valueText, 'Unknown', 'and Unknown until the TV has been asked');
